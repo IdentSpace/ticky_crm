@@ -1,0 +1,23 @@
+# --- IDE / OS Specific ---
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+
+# --- Node ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- PHP ---
+vendor/
+
+# --- Nextcloud / Vite Build ---
+# Ignoriert die von Vite generierten produktiven Assets
+js/
+css/
+
+# CRITICAL: Ignoriert den lokalen Release-Build-Ordner unseres Node-Skripts
+/build/

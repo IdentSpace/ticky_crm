@@ -1,0 +1,11 @@
+parameters:
+    # Level 1 ist super für den Einstieg (prüft grundlegende Fehler und Typen)
+    level: 1
+
+    paths:
+        - lib
+
+    # Damit weiß PHPStan, wo es den Nextcloud-Core zum Abgleichen findet
+    scanDirectories:
+        - ../../lib
+        - ../../core

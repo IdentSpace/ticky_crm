@@ -1,0 +1,30 @@
+{
+  "name": "identspace/ticky_crm",
+  "description": "Nextcloud CRM",
+  "license": "agpl-3.0-or-later",
+  "authors": [
+    {
+      "name": "IdentSpace",
+      "email": "info@identspace.de"
+    }
+  ],
+  "require": {
+    "php": "^8.2"
+  },
+  "require-dev": {
+    "nextcloud/coding-standard": "^1.1",
+    "nextcloud/ocp": "^30.0.0",
+    "phpstan/phpstan": "^2.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "OCA\\TickyCRM\\": "lib/"
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "platform": {
+      "php": "8.2"
+    }
+  }
+}

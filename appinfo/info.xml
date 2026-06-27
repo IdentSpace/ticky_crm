@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>ticky_crm</id>
+    <name>Ticky CRM</name>
+    <summary>Open Source CRM Tool</summary>
+    <description>An Open Source CRM built from the ground up for Nextcloud. Features native integration, client management, interaction logs, and user mentions.</description>
+    <version>0.1.0</version>
+    <licence>agpl</licence>
+
+    <author mail="karolis@identspace.de" homepage="https://identspace.de">Karolis Dailidonis</author>
+    <author mail="info@identspace.de" homepage="https://identspace.de">IdentSpace</author>
+
+    <namespace>TickyCRM</namespace>
+    <category>office</category>
+
+    <website>https://github.com/IdentSpace/ticky_crm</website>
+    <bugs>https://github.com/IdentSpace/ticky_crm/issues</bugs>
+    <repository type="git">https://github.com/IdentSpace/ticky_crm.git</repository>
+
+    <dependencies>
+        <php min-version="8.2"/>
+        <nextcloud min-version="30" max-version="33"/>
+    </dependencies>
+</info>
