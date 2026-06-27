@@ -13,6 +13,10 @@
 
     <namespace>TickyCRM</namespace>
     <category>office</category>
+    <screenshots>
+          <screenshot>https://raw.githubusercontent.com/IdentSpace/ticky_crm/refs/heads/main/img/screenshots/clients.png</screenshot>
+          <screenshot>https://raw.githubusercontent.com/IdentSpace/ticky_crm/refs/heads/main/img/screenshots/notes.png</screenshot>
+    </screenshots>
 
     <website>https://github.com/IdentSpace/ticky_crm</website>
     <bugs>https://github.com/IdentSpace/ticky_crm/issues</bugs>
