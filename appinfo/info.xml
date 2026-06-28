@@ -8,6 +8,7 @@
     <version>0.1.0</version>
     <licence>agpl</licence>
 
+    <author mail="info@identspace.de" homepage="https://identspace.de">IdentSpace</author>
     <author mail="karolis@identspace.de" homepage="https://identspace.de">Karolis Dailidonis</author>
 
     <namespace>TickyCRM</namespace>

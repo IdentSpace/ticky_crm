@@ -18,8 +18,8 @@ async function createRelease() {
     fs.mkdirSync(artifactDir, { recursive: true })
 
     // 2. Zu kopierende Ordner und Dateien definieren
-    const foldersToCopy = ['appinfo', 'lib', 'l10n', 'js', 'css', 'templates', 'img']
-    const filesToCopy = ['CHANGELOG.md', 'LICENSE']
+    const foldersToCopy = ['appinfo', 'lib', 'l10n', 'js', 'css', 'templates', 'img', 'vendor']
+    const filesToCopy = ['CHANGELOG.md', 'LICENSE.md', 'README.md']
 
     // Ordner kopieren
     foldersToCopy.forEach((folder) => {
