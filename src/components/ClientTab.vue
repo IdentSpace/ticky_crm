@@ -58,6 +58,68 @@
       </fieldset>
 
       <fieldset class="sidebar-fieldset">
+        <legend>{{ t('ticky_crm', 'section_addresses') }}</legend>
+
+        <div v-for="(address, index) in editableClient.addresses" :key="index" class="sidebar-address-item">
+          <div class="address-item-header">
+            <span></span>
+            <NcButton type="error" :disabled="isLoading" @click="removeAddress(index)">
+              <template #icon>
+                <IconDelete :size="14" />
+              </template>
+            </NcButton>
+          </div>
+
+          <div class="address-fields-vertical">
+            <NcTextField
+                v-model="address.label"
+                :label="t('ticky_crm', 'field_address_label')"
+                :disabled="isLoading"
+            />
+
+            <NcTextField
+                v-model="address.street"
+                :label="t('ticky_crm', 'field_street')"
+                :disabled="isLoading"
+            />
+            <NcTextField
+                v-model="address.house_number"
+                :label="t('ticky_crm', 'field_house_number')"
+                :disabled="isLoading"
+            />
+            <NcTextField
+                v-model="address.address_addition"
+                :label="t('ticky_crm', 'field_address_addition')"
+                :disabled="isLoading"
+            />
+            <NcTextField
+                v-model="address.postal_code"
+                :label="t('ticky_crm', 'field_postal_code')"
+                :disabled="isLoading"
+            />
+            <NcTextField
+                v-model="address.city"
+                :label="t('ticky_crm', 'field_city')"
+                :disabled="isLoading"
+            />
+            <NcTextField
+                v-model="address.country_code"
+                :label="t('ticky_crm', 'field_country_code')"
+                :disabled="isLoading"
+                maxlength="2"
+            />
+          </div>
+        </div>
+
+        <NcButton type="secondary" class="add-address-btn" :disabled="isLoading" @click="addBlankAddress">
+          <template #icon>
+            <IconPlus :size="16" />
+          </template>
+          {{ t('ticky_crm', 'btn_add_address') }}
+        </NcButton>
+      </fieldset>
+
+      <fieldset class="sidebar-fieldset">
         <legend>{{ t('ticky_crm', 'section_tax') }}</legend>
         <NcTextField
           v-model="editableClient.vat_id"
@@ -108,6 +170,7 @@ import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import IconCheck from 'vue-material-design-icons/Check.vue'
 import IconDelete from 'vue-material-design-icons/Delete.vue'
+import IconPlus from 'vue-material-design-icons/Plus.vue'
 import { updateClient, deleteClient } from '../services/clientService'
 
 const props = defineProps({
@@ -136,20 +199,40 @@ const statusSelectConfig = reactive({
   value: null,
 })
 
-const editableClient = ref({ ...props.client })
+const editableClient = ref(JSON.parse(JSON.stringify(props.client)))
+if (!editableClient.value.addresses) editableClient.value.addresses = []
+
 const isLoading      = ref(false)
 const errorMessage   = ref('')
 
-// Initialwerte aus Client setzen
 typeSelectConfig.value   = toOption(typeSelectConfig.options,   props.client.type)
 statusSelectConfig.value = toOption(statusSelectConfig.options, props.client.status)
 
 watch(() => props.client, (newClient) => {
-  editableClient.value     = { ...newClient }
+  editableClient.value     = JSON.parse(JSON.stringify(newClient))
+  if (!editableClient.value.addresses) editableClient.value.addresses = []
+
   typeSelectConfig.value   = toOption(typeSelectConfig.options,   newClient.type)
   statusSelectConfig.value = toOption(statusSelectConfig.options, newClient.status)
   errorMessage.value       = ''
 }, { deep: true })
+
+const addBlankAddress = () => {
+  editableClient.value.addresses.push({
+    type: 'billing',
+    label: t('ticky_crm', 'address_label_billing_default'),
+    street: '',
+    house_number: '',
+    address_addition: '',
+    postal_code: '',
+    city: '',
+    country_code: 'DE'
+  })
+}
+
+const removeAddress = (index) => {
+  editableClient.value.addresses.splice(index, 1)
+}
 
 const handleSave = async () => {
   isLoading.value    = true
@@ -159,6 +242,7 @@ const handleSave = async () => {
       ...editableClient.value,
       type:   typeSelectConfig.value?.id   ?? null,
       status: statusSelectConfig.value?.id ?? null,
+      addresses: editableClient.value.addresses.filter(a => a.street.trim() || a.city.trim())
     }
     const updatedData = await updateClient(payload)
     emit('client-updated', updatedData)
@@ -235,5 +319,38 @@ const handleDelete = async () => {
   padding: 12px;
   border-radius: var(--border-radius);
   font-size: 13px;
+}
+
+.sidebar-address-item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-large);
+  padding: 16px;
+  background-color: var(--color-background-hover);
+  margin-bottom: 16px;
+
+  .address-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    font-weight: bold;
+    font-size: 13px;
+    color: var(--color-text-main);
+    border-bottom: 1px solid var(--color-border-light);
+    padding-bottom: 8px;
+  }
+}
+
+/* Einspaltiges Layout mit gleichmäßigem Abstand */
+.address-fields-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.add-address-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 8px;
 }
 </style>

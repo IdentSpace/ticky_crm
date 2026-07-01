@@ -45,7 +45,7 @@
       </TickyHeader>
 
       <TickyTable :value="clients" @row-click="selectedClient = $event">
-        <TickyColumn field="name" :header="t('ticky_crm', 'column_name')" />
+        <TickyColumn field="name" :header="t('ticky_crm', 'column_name')" max-width="250px"/>
         <TickyColumn field="client_number" :header="t('ticky_crm', 'column_client_number')" />
         <TickyColumn field="contact_email" :header="t('ticky_crm', 'column_email')" />
         <TickyColumn field="phone" :header="t('ticky_crm', 'column_phone')" />
@@ -82,6 +82,15 @@
         </template>
         <ClientNotesTab :client-id="selectedClient.id" />
       </NcAppSidebarTab>
+
+      <NcAppSidebarTab id="ticky-activities" :name="t('ticky_crm', 'tab_activities')" :tab-index="2">
+        <template #icon>
+          <svg xmlns="http://www.w3.org/2000/svg" id="mdi-lightning-bolt" height="20px" viewBox="0 0 24 24"><path d="M11 15H6L13 1V9H18L11 23V15Z"></path></svg>
+        </template>
+        <ActivityTab :client-uuid="selectedClient.uuid" />
+      </NcAppSidebarTab>
+
+
     </NcAppSidebar>
   </NcContent>
 </template>
@@ -90,8 +99,7 @@
 import { ref, onMounted, nextTick, computed } from 'vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import { t, n } from '@nextcloud/l10n' // Lokalisierungsmethoden importieren
-
+import { t, n } from '@nextcloud/l10n'
 import NcContent from '@nextcloud/vue/components/NcContent'
 import NcAppContent from '@nextcloud/vue/components/NcAppContent'
 import NcAppNavigation from '@nextcloud/vue/components/NcAppNavigation'
@@ -99,17 +107,16 @@ import NcAppNavigationItem from '@nextcloud/vue/components/NcAppNavigationItem'
 import NcAppSidebar from '@nextcloud/vue/components/NcAppSidebar'
 import NcAppSidebarTab from '@nextcloud/vue/components/NcAppSidebarTab'
 import NcButton from '@nextcloud/vue/components/NcButton'
-
 import IconPlus from 'vue-material-design-icons/Plus.vue'
 import IconAccount from 'vue-material-design-icons/Account.vue'
 import IconAccountMultiple from 'vue-material-design-icons/AccountMultiple.vue'
 import IconNoteText from 'vue-material-design-icons/NoteTextOutline.vue'
 import IconCogOutline from 'vue-material-design-icons/CogOutline.vue'
-
 import TickyTable from './components/TickyTable.vue'
 import TickyColumn from './components/TickyColumn.vue'
 import TickyHeader from './components/TickyHeader.vue'
 import NewClientDialog from './dialogs/NewClientDialog.vue'
+import ActivityTab from './components/ActivityTab.vue'
 import ClientTab from './components/ClientTab.vue'
 import ClientNotesTab from './components/ClientNotesTab.vue'
 import { getClients } from './services/clientService'

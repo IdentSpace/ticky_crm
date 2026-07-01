@@ -25,7 +25,7 @@ export const updateClient = async (client) => {
     try {
         // Sendet den Request an z.B. /apps/ticky/api/v1/clients/{id}
         const response = await axios.put(
-            generateUrl(`/apps/ticky_crm/api/v1/clients/${client.id}`),
+            generateUrl(`/apps/ticky_crm/api/v1/clients/${client.uuid}`),
             client
         )
         // Gibt den frisch aktualisierten Kunden vom Server zurück

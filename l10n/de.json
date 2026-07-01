@@ -80,7 +80,31 @@
     "column_email": "E-Mail",
     "column_phone": "Telefonnummer",
     "tab_details": "Details",
-    "tab_notes": "Notizen"
+    "tab_notes": "Notizen",
+    "tab_activities": "Aktivität",
+
+    "section_address": "Adresse",
+    "section_addresses": "Adressen",
+    "address_label_fallback": "Adresse",
+    "address_label_billing_default": "Rechnungsadresse",
+    "btn_add_address": "Adresse hinzufügen",
+    "field_address_label": "Bezeichnung",
+    "field_country_code": "Länder-Code",
+    "field_street": "Straße",
+    "field_house_number": "Hausnummer",
+    "field_postal_code": "Postleitzahl",
+    "field_city": "Stadt",
+    "field_address_addition": "Adresszusatz",
+
+    "type_address": "Addresse",
+    "type_billing": "Rechnungsadresse",
+    "type_shipping": "Lieferadresse",
+
+    "no_activities_found": "Keine Aktivitäten",
+    "loading_activities": "Lädt...",
+
+    "client_created": "Kunde angelegt",
+    "client_updated": "Kunde wurde aktualisiert"
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }

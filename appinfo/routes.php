@@ -9,6 +9,10 @@ return [
         ['name' => 'client#update', 'url' => '/api/v1/clients/{uuid}', 'verb' => 'PUT'],
         ['name' => 'client#delete', 'url' => '/api/v1/clients/{uuid}', 'verb' => 'DELETE'],
 
+        ['name' => 'addressi#index', 'url' => '/api/v1/clients/{clientUuid}/addresses', 'verb' => 'GET'],
+
+        ['name' => 'activity#getClientActivities', 'url' => '/api/v1/clients/{uuid}/activities', 'verb' => 'GET'],
+
         ['name' => 'note#index',   'url' => '/api/v1/clients/{clientId}/notes', 'verb' => 'GET'],
         ['name' => 'note#create',  'url' => '/api/v1/clients/{clientId}/notes', 'verb' => 'POST'],
         ['name' => 'note#update',  'url' => '/api/v1/notes/{id}',               'verb' => 'PUT'],
