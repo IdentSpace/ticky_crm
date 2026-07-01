@@ -76,6 +76,54 @@
       </fieldset>
 
       <fieldset class="ticky-fieldset">
+        <legend>{{ t('ticky_crm', 'section_address') }}</legend>
+        <div class="ticky-grid ticky-address-grid">
+          <NcTextField
+              v-model="newClient.address.street"
+              :label="t('ticky_crm', 'field_street')"
+              :disabled="isLoading"
+          />
+
+          <NcTextField
+              v-model="newClient.address.house_number"
+              :label="t('ticky_crm', 'field_house_number')"
+              :disabled="isLoading"
+          />
+
+          <div class="ticky-grid-full-width address-row-inline">
+            <NcTextField
+                v-model="newClient.address.postal_code"
+                :label="t('ticky_crm', 'field_postal_code')"
+                :disabled="isLoading"
+                class="field-plz"
+            />
+
+            <NcTextField
+                v-model="newClient.address.city"
+                :label="t('ticky_crm', 'field_city')"
+                :disabled="isLoading"
+                class="field-city"
+            />
+
+            <NcTextField
+                v-model="newClient.address.country_code"
+                :label="t('ticky_crm', 'field_country_code')"
+                :disabled="isLoading"
+                class="field-country"
+                maxlength="2"
+            />
+          </div>
+
+          <NcTextField
+              v-model="newClient.address.address_addition"
+              :label="t('ticky_crm', 'field_address_addition')"
+              :disabled="isLoading"
+              class="ticky-grid-full-width"
+          />
+        </div>
+      </fieldset>
+
+      <fieldset class="ticky-fieldset">
         <legend>{{ t('ticky_crm', 'section_tax') }}</legend>
         <div class="ticky-grid">
           <NcTextField
@@ -160,6 +208,16 @@ const initialFormState = () => ({
   tax_number:      '',
   register_court:  '',
   register_number: '',
+  address: {
+    type:             'address',
+    label:            '',
+    street:           '',
+    house_number:     '',
+    address_addition: '',
+    postal_code:      '',
+    city:             '',
+    country_code:     'DE'
+  }
 })
 
 const newClient = ref(initialFormState())
@@ -183,10 +241,13 @@ const handleSubmit = async () => {
   errorMessage.value = ''
 
   try {
+    const { address, ...clientData } = newClient.value
+
     const payload = {
-      ...newClient.value,
+      ...clientData,
       type:   typeSelectConfig.value?.id   ?? 'company',
       status: statusSelectConfig.value?.id ?? 'lead',
+      addresses: (address.street.trim() || address.city.trim()) ? [address] : []
     }
 
     const createdClient = await createClient(payload)
@@ -258,5 +319,45 @@ const buttons = computed(() => [
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px 20px;
+}
+
+.ticky-address-grid {
+  grid-template-columns: 3fr 1fr;
+}
+
+.ticky-grid-full-width {
+  grid-column: span 2;
+}
+.address-row-inline {
+  display: flex;
+  gap: 12px; /* Abstand zwischen den Feldern */
+  width: 100%;
+  align-items: flex-start;
+
+  /* Verteilung der Breiten innerhalb der Reihe */
+  .field-plz {
+    flex: 0 0 25%;
+  }
+
+  .field-city {
+    flex: 1; /* Nimmt sich den restlichen verfügbaren Platz */
+  }
+
+  .field-country {
+    flex: 0 0 20%;
+  }
+}
+
+/* Optional: Falls es auf sehr schmalen Bildschirmen (z.B. Mobile) doch zu eng wird */
+@media (max-width: 480px) {
+  .address-row-inline {
+    flex-direction: column;
+    gap: 16px;
+
+    .field-plz, .field-city, .field-country {
+      flex: 1 1 100%;
+      width: 100%;
+    }
+  }
 }
 </style>

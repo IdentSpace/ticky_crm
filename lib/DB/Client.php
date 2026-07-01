@@ -20,6 +20,7 @@ use JsonSerializable;
  * @method string|null getRegisterNumber()
  * @method int|string|null getNcFileId()
  * @method string|null getNcFolderPath()
+ * @method array getAddresses()
  * @method \DateTime|null getCreatedAt()
  * @method \DateTime|null getUpdatedAt()
  */
@@ -39,8 +40,10 @@ class Client extends Entity implements JsonSerializable {
     protected $registerNumber;
     protected $ncFileId;
     protected $ncFolderPath;
+    protected $addresses = [];
     protected $createdAt;
     protected $updatedAt;
+
 
     public function __construct() {
         $this->addType('createdAt', 'datetime');
@@ -68,6 +71,7 @@ class Client extends Entity implements JsonSerializable {
             'register_number' => $this->getRegisterNumber(),
             'nc_file_id' => $this->getNcFileId(),
             'nc_folder_path' => $this->getNcFolderPath(),
+            'addresses' => $this->getAddresses(),
             // Formatiert das DateTime-Objekt als ISO-8601-String für JS
             'created_at' => $this->getCreatedAt() ? $this->getCreatedAt()->format(\DateTime::ATOM) : null,
             'updated_at' => $this->getUpdatedAt() ? $this->getUpdatedAt()->format(\DateTime::ATOM) : null,

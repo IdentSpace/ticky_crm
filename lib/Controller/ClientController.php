@@ -46,16 +46,23 @@ class ClientController extends ApiController {
      */
     public function create(): DataResponse {
         try {
-            $client = $this->service->create($this->request->getParams());
+            $params = $this->request->getParams();
+            $addresses = $this->request->getParam('addresses', []);
+            $params['addresses'] = $addresses;
+            $client = $this->service->create($params);
             return new DataResponse($client, Http::STATUS_CREATED);
         } catch (\Throwable $e) {
-            if ($e->getCode() === 23000 || str_contains($e->getMessage(), '1062')) {
+            $previous = $e->getPrevious();
+            $errorMessage = $previous ? $previous->getMessage() : $e->getMessage();
+            $errorCode = $previous ? $previous->getCode() : $e->getCode();
+
+            if ($errorCode === 23000 || str_contains($errorMessage, '1062')) {
                 return new DataResponse([
                     'error'   => 'duplicate_client_number',
-                    'message' => 'Diese Kundennummer wird bereits verwendet.',
+                    'message' => 'Clientnumber exist already.',
                 ], Http::STATUS_CONFLICT);
             }
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => $errorMessage, 'message' => "Systemfehler"], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -64,9 +71,24 @@ class ClientController extends ApiController {
      */
     public function update(string $uuid): DataResponse {
         try {
-            return new DataResponse($this->service->update($uuid, $this->request->getParams()));
-        } catch (DoesNotExistException) {
-            return new DataResponse(['error' => 'Kunde nicht gefunden'], Http::STATUS_NOT_FOUND);
+            $params = $this->request->getParams();
+            $addresses = $this->request->getParam('addresses', null);
+            if ($addresses !== null) {
+                $params['addresses'] = $addresses;
+            }
+            return new DataResponse($this->service->update($uuid, $params));
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(
+                ['message' => 'client not found.'],
+                Http::STATUS_NOT_FOUND
+            );
+        } catch (\Throwable $e) {
+            // Hier fangen wir JEDEN Fehler (auch SQL/DBAL) ab und zwingen Nextcloud,
+            // eine saubere JSON-DataResponse mit Status 500 zu schicken.
+            return new DataResponse(
+                ['message' => 'error by during update: ' . $e->getMessage()],
+                Http::STATUS_INTERNAL_SERVER_ERROR
+            );
         }
     }
 
