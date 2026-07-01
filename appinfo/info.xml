@@ -3,8 +3,8 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>ticky_crm</id>
     <name>Ticky CRM</name>
-    <summary>Open Source CRM Tool</summary>
-    <description>An Open Source CRM built from the ground up for Nextcloud. Features native integration, client management, interaction logs, and user mentions.</description>
+    <summary>Open-source CRM and client management for Nextcloud</summary>
+    <description>A modern, open-source CRM built from the ground up for Nextcloud. Ticky CRM provides seamless client management, automated interaction logs, and activity tracking. Please note: This project is currently in its early stages of development. We are actively looking for feedback, ideas, and feature suggestions—contributions from the community are highly welcome!</description>
     <version>0.1.1</version>
     <licence>agpl</licence>
 
