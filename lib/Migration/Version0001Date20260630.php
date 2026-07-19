@@ -7,7 +7,7 @@ use OCP\Migration\IOutput;
 use OCP\DB\ISchemaWrapper;
 use Closure;
 
-class Version1002Date20260630 implements IMigrationStep {
+class Version0001Date20260630 implements IMigrationStep {
 
     public function name(): string {
         return 'Tabelle für Kundenadressen hinzufügen';

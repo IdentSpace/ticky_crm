@@ -6,7 +6,7 @@ use OCP\Migration\IOutput;
 use OCP\Migration\SimpleMigrationStep;
 use OCP\Server;
 
-class Version1006Date20260717 extends SimpleMigrationStep {
+class Version0002Date20260717 extends SimpleMigrationStep {
 
     public function preSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
     }

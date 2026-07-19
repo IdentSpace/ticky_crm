@@ -25,20 +25,6 @@
           />
         </div>
 
-        <div class="setting-row">
-          <NcTextField
-            v-model="newAddressBook"
-            label="Adressbuch hinzufügen"
-          />
-
-          <NcButton type="primary" :disabled="saving" @click="handleAddressbook">
-            <template #icon>
-              <IconCheck :size="16" />
-            </template>
-            {{ saving ? t('ticky_crm', 'settings_saving') : t('ticky_crm', 'settings_save') }}
-          </NcButton>
-        </div>
-
         <div class="settings-actions">
           <NcButton type="primary" :disabled="saving" @click="handleSave">
             <template #icon>

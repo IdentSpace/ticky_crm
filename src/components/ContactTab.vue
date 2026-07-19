@@ -5,21 +5,22 @@
         v-model="selectedContact"
         :options="searchResults"
         :loading="isSearching"
+        :append-to-body="true"
         label="displayName"
+        v-model:search="searchQuery"
         :placeholder="t('ticky_crm', 'contact_search_placeholder')"
         @search="onSearchContacts"
       >
-        <template #option="{ option }">
+        <template #option="option">
           <div class="contact-option">
             <NcAvatar
-              v-if="option?.displayName"
-              :display-name="option.displayName"
+              :display-name="option?.displayName"
               :is-no-user="true"
               :size="24"
             />
             <div class="contact-option__text">
               <span class="contact-option__name">{{ option?.displayName }}</span>
-              <span v-if="option.email" class="contact-option__email text-muted">{{ option?.email }}</span>
+              <span v-if="option?.email" class="contact-option__email text-muted">{{ option?.email }}</span>
             </div>
           </div>
         </template>
@@ -111,6 +112,7 @@ const props = defineProps({
   },
 })
 
+const searchQuery = ref('')
 defineEmits(['view-details'])
 
 const linkedContacts = ref([])
@@ -247,9 +249,10 @@ watch(() => props.clientId, fetchLinkedContacts, { immediate: true })
 }
 .search-container {
   display: flex;
+  flex-flow:column;
   gap: 8px;
   margin-bottom: 20px;
-  align-items: flex-start;
+  align-items: flex-end;
 }
 .search-container :deep(.nc-select) {
   flex-grow: 1;

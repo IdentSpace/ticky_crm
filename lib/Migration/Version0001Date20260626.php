@@ -7,7 +7,7 @@ use OCP\Migration\IOutput;
 use OCP\DB\ISchemaWrapper;
 use Closure;
 
-class Version1000Date20260626 implements IMigrationStep {
+class Version0001Date20260626 implements IMigrationStep {
 
     public function name(): string {
         return 'Initiales Tabellen-Setup für Ticky CRM';
