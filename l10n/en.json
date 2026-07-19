@@ -70,11 +70,11 @@
     "mention_empty": "No users found",
 
     "app_title": "Ticky CRM",
-    "nav_clients": "Clients",
+    "nav_clients": "Customer",
     "nav_settings": "Settings",
     "page_heading_clients": "Client Management",
     "client_count_singular": "1 client in total",
-    "client_count_plural": "{count} clients in total",
+    "client_count_plural": "{count} customer in total",
     "column_name": "Name",
     "column_client_number": "Client number",
     "column_email": "Email",
@@ -104,7 +104,27 @@
     "loading_activities": "Loading...",
 
     "client_created": "Client created",
-    "client_updated": "Client updated"
+    "client_updated": "Client updated",
+    "client_contact_linked": "Contact linked",
+    "client_contact_unlinked": "Contact unlinked",
+
+    "contact_search_placeholder": "Search contact in Ticky address book …",
+    "contact_no_results": "No contacts found.",
+    "contact_link_button": "Link",
+    "contact_loading": "Loading contacts …",
+    "contact_actions_aria_label": "More actions for {name}",
+    "contact_view_details": "View details",
+    "contact_remove_link": "Remove link",
+    "contact_empty_state": "No contacts linked to this client yet.",
+    "contact_error_load": "Contacts could not be loaded.",
+    "contact_error_search": "Contact search failed.",
+    "contact_error_invalid": "Invalid contact selected.",
+    "contact_success_linked": "Contact was linked.",
+    "contact_info_already_linked": "This contact was already linked.",
+    "contact_error_link_failed": "Contact could not be linked.",
+    "contact_success_unlinked": "Link was removed.",
+    "contact_error_unlink_failed": "Link could not be removed.",
+    "contact_error_missing_uid": "Contact does not have a valid UID."
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }

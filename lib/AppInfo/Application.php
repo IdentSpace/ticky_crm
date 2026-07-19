@@ -2,22 +2,28 @@
 namespace OCA\TickyCRM\AppInfo;
 
 use OCP\AppFramework\App;
+use OCP\INavigationManager;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use OCA\DAV\Events\CardDeletedEvent;
+
+use OCA\TickyCRM\Listener\CardDeletedListener;
 use OCA\TickyCRM\Listener\NavigationListener;
 use OCA\TickyCRM\Middleware\AccessMiddleware;
-use OCP\INavigationManager;
+use OCA\TickyCRM\Notification\Notifier;
 
 class Application extends App implements IBootstrap {
     public const APP_ID = 'ticky_crm';
+
     public function __construct(array $urlParams = []) {
         parent::__construct(self::APP_ID, $urlParams);
-        $this->getContainer()->registerMiddleware(AccessMiddleware::class);
     }
 
     public function register(IRegistrationContext $context): void {
-        $context->registerNotifierService(\OCA\TickyCRM\Notification\Notifier::class);
+        $context->registerMiddleware(AccessMiddleware::class);
+        $context->registerNotifierService(Notifier::class);
+        $context->registerEventListener(CardDeletedEvent::class, CardDeletedListener::class);
     }
 
     public function boot(IBootContext $context): void {
@@ -35,4 +41,3 @@ class Application extends App implements IBootstrap {
         });
     }
 }
-

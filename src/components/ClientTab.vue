@@ -62,7 +62,7 @@
 
         <div v-for="(address, index) in editableClient.addresses" :key="index" class="sidebar-address-item">
           <div class="address-item-header">
-            <span></span>
+            <span />
             <NcButton type="error" :disabled="isLoading" @click="removeAddress(index)">
               <template #icon>
                 <IconDelete :size="14" />
@@ -72,46 +72,51 @@
 
           <div class="address-fields-vertical">
             <NcTextField
-                v-model="address.label"
-                :label="t('ticky_crm', 'field_address_label')"
-                :disabled="isLoading"
+              v-model="address.label"
+              :label="t('ticky_crm', 'field_address_label')"
+              :disabled="isLoading"
             />
 
             <NcTextField
-                v-model="address.street"
-                :label="t('ticky_crm', 'field_street')"
-                :disabled="isLoading"
+              v-model="address.street"
+              :label="t('ticky_crm', 'field_street')"
+              :disabled="isLoading"
             />
             <NcTextField
-                v-model="address.house_number"
-                :label="t('ticky_crm', 'field_house_number')"
-                :disabled="isLoading"
+              v-model="address.house_number"
+              :label="t('ticky_crm', 'field_house_number')"
+              :disabled="isLoading"
             />
             <NcTextField
-                v-model="address.address_addition"
-                :label="t('ticky_crm', 'field_address_addition')"
-                :disabled="isLoading"
+              v-model="address.address_addition"
+              :label="t('ticky_crm', 'field_address_addition')"
+              :disabled="isLoading"
             />
             <NcTextField
-                v-model="address.postal_code"
-                :label="t('ticky_crm', 'field_postal_code')"
-                :disabled="isLoading"
+              v-model="address.postal_code"
+              :label="t('ticky_crm', 'field_postal_code')"
+              :disabled="isLoading"
             />
             <NcTextField
-                v-model="address.city"
-                :label="t('ticky_crm', 'field_city')"
-                :disabled="isLoading"
+              v-model="address.city"
+              :label="t('ticky_crm', 'field_city')"
+              :disabled="isLoading"
             />
             <NcTextField
-                v-model="address.country_code"
-                :label="t('ticky_crm', 'field_country_code')"
-                :disabled="isLoading"
-                maxlength="2"
+              v-model="address.country_code"
+              :label="t('ticky_crm', 'field_country_code')"
+              :disabled="isLoading"
+              maxlength="2"
             />
           </div>
         </div>
 
-        <NcButton type="secondary" class="add-address-btn" :disabled="isLoading" @click="addBlankAddress">
+        <NcButton
+          type="secondary"
+          class="add-address-btn"
+          :disabled="isLoading"
+          @click="addBlankAddress"
+        >
           <template #icon>
             <IconPlus :size="16" />
           </template>

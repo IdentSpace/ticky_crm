@@ -7,7 +7,9 @@ use OCP\IRequest;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 use OCA\TickyCRM\Service\AccessService;
-
+use OCA\DAV\CardDAV\CardDavBackend;
+use OCP\App\IAppManager;
+use OCP\IUserSession;
 class SettingsController extends Controller {
 
     public function __construct(
@@ -26,13 +28,11 @@ class SettingsController extends Controller {
     public function getSettings(): JSONResponse {
         $settings = $this->accessService->getAllowedSettings();
 
-        // Alle Nextcloud-Gruppen laden
         $groups = array_map(
             fn($group) => ['id' => $group->getGID(), 'label' => $group->getDisplayName()],
             $this->groupManager->search('')
         );
 
-        // Alle Nextcloud-User laden
         $users = [];
         foreach ($this->userManager->search('') as $user) {
             $users[] = ['id' => $user->getUID(), 'label' => $user->getDisplayName()];
@@ -47,10 +47,67 @@ class SettingsController extends Controller {
     }
 
     /**
-     * Nur Admins dürfen Einstellungen speichern
+     * @AdminRequired
      */
     public function saveSettings(array $groups, array $users): JSONResponse {
         $this->accessService->saveSettings($groups, $users);
         return new JSONResponse(['success' => true]);
+    }
+
+    /**
+     * Erstellt ein zentrales Adressbuch für die App
+     * @AdminRequired
+     */
+    public function createAddressBook(): JSONResponse {
+        try {
+            // Prüfen, ob Contacts App installiert ist
+            $appManager = \OC::$server->get(IAppManager::class);
+            if (!$appManager->isInstalled('contacts')) {
+                return new JSONResponse([
+                    'success' => false,
+                    'error' => 'Contacts app is not installed'
+                ], 400);
+            }
+
+            // System-Principal anstelle des Users nutzen
+            $principalUri = 'principals/app/ticky';
+
+            /** @var CardDavBackend $cardDavBackend */
+            $cardDavBackend = \OC::$server->get(CardDavBackend::class);
+
+            // System-Adressbücher abrufen (Nutzt dieselbe Methode, benötigt aber den System-Principal)
+            $existing = $cardDavBackend->getAddressBooksForUser($principalUri);
+            foreach ($existing as $ab) {
+                if ($ab['{DAV:}displayname'] === 'Ticky CRM Kontakte') {
+                    return new JSONResponse([
+                        'success' => false,
+                        'error' => 'System address book already exists',
+                        'addressbook_id' => $ab['id'],
+                        'uri' => $ab['uri']
+                    ], 409);
+                }
+            }
+
+            // Erstellt das Adressbuch auf Systemebene
+            $addressBookId = $cardDavBackend->createAddressBook(
+                $principalUri,
+                'ticky-crm-kontakte',
+                [
+                    '{DAV:}displayname' => 'Ticky CRM Kontakte',
+                ]
+            );
+
+            return new JSONResponse([
+                'success' => true,
+                'addressbook_id' => $addressBookId,
+                'uri' => 'ticky-crm-kontakte',
+                'principaluri' => $principalUri
+            ]);
+        } catch (\Exception $e) {
+            return new JSONResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

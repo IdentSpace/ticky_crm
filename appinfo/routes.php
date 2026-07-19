@@ -9,7 +9,12 @@ return [
         ['name' => 'client#update', 'url' => '/api/v1/clients/{uuid}', 'verb' => 'PUT'],
         ['name' => 'client#delete', 'url' => '/api/v1/clients/{uuid}', 'verb' => 'DELETE'],
 
-        ['name' => 'addressi#index', 'url' => '/api/v1/clients/{clientUuid}/addresses', 'verb' => 'GET'],
+        ['name' => 'client#getContacts', 'url' => '/api/v1/clients/{uuid}/contacts', 'verb' => 'GET'],
+        ['name' => 'client#linkContact', 'url' => '/api/v1/clients/{uuid}/contacts', 'verb' => 'POST'],
+        ['name' => 'client#unlinkContact', 'url' => '/api/v1/clients/{uuid}/contacts/{cardId}', 'verb' => 'DELETE', 'requirements' => ['cardId' => '\d+']],
+
+        ['name' => 'address#index', 'url' => '/api/v1/clients/{clientUuid}/addresses', 'verb' => 'GET'],
+        ['name' => 'contact#search', 'url' => '/api/v1/contacts/search', 'verb' => 'GET'],
 
         ['name' => 'activity#getClientActivities', 'url' => '/api/v1/clients/{uuid}/activities', 'verb' => 'GET'],
 
@@ -19,6 +24,7 @@ return [
         ['name' => 'note#destroy', 'url' => '/api/v1/notes/{id}',               'verb' => 'DELETE'],
 
         ['name' => 'settings#getSettings',  'url' => '/api/v1/settings', 'verb' => 'GET'],
+        ['name' => 'settings#createAddressBook',  'url' => '/api/v1/settings/addressbook', 'verb' => 'POST'],
         ['name' => 'settings#saveSettings', 'url' => '/api/v1/settings', 'verb' => 'POST'],
     ]
 ];

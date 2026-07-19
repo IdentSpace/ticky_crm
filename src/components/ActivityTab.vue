@@ -1,7 +1,7 @@
 <template>
   <div class="ticky-activities-container">
     <div v-if="loading" class="activity-state activity-loading">
-<!--      <NcLoadingIcon :size="24" />-->
+      <!--      <NcLoadingIcon :size="24" />-->
       <p>{{ t('ticky_crm', 'loading_activities') }}</p>
     </div>
 
@@ -11,9 +11,9 @@
 
     <div v-else class="activity-timeline">
       <div
-          v-for="activity in activities"
-          :key="activity.id"
-          class="activity-item"
+        v-for="activity in activities"
+        :key="activity.id"
+        class="activity-item"
       >
         <div class="activity-meta">
           <span class="activity-author">
@@ -24,7 +24,7 @@
           </span>
         </div>
 
-        <div class="activity-content" v-html="activity.parsedSubject"></div>
+        <div class="activity-content" v-html="activity.parsedSubject + ' ' + activity.objectName" />
       </div>
     </div>
   </div>
@@ -32,7 +32,7 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import { t, n } from '@nextcloud/l10n'
+import { t } from '@nextcloud/l10n'
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router'
 

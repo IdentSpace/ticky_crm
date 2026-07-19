@@ -45,7 +45,7 @@
       </TickyHeader>
 
       <TickyTable :value="clients" @row-click="selectedClient = $event">
-        <TickyColumn field="name" :header="t('ticky_crm', 'column_name')" max-width="250px"/>
+        <TickyColumn field="name" :header="t('ticky_crm', 'column_name')" max-width="250px" />
         <TickyColumn field="client_number" :header="t('ticky_crm', 'column_client_number')" />
         <TickyColumn field="contact_email" :header="t('ticky_crm', 'column_email')" />
         <TickyColumn field="phone" :header="t('ticky_crm', 'column_phone')" />
@@ -83,14 +83,21 @@
         <ClientNotesTab :client-id="selectedClient.id" />
       </NcAppSidebarTab>
 
+      <NcAppSidebarTab id="contacts" name="Kontakte" icon="icon-contacts-dark">
+        <ContactTab :client-id="selectedClient.uuid" />
+      </NcAppSidebarTab>
+
       <NcAppSidebarTab id="ticky-activities" :name="t('ticky_crm', 'tab_activities')" :tab-index="2">
         <template #icon>
-          <svg xmlns="http://www.w3.org/2000/svg" id="mdi-lightning-bolt" height="20px" viewBox="0 0 24 24"><path d="M11 15H6L13 1V9H18L11 23V15Z"></path></svg>
+          <svg
+            id="mdi-lightning-bolt"
+            xmlns="http://www.w3.org/2000/svg"
+            height="20px"
+            viewBox="0 0 24 24"
+          ><path d="M11 15H6L13 1V9H18L11 23V15Z" /></svg>
         </template>
         <ActivityTab :client-uuid="selectedClient.uuid" />
       </NcAppSidebarTab>
-
-
     </NcAppSidebar>
   </NcContent>
 </template>
@@ -119,6 +126,7 @@ import NewClientDialog from './dialogs/NewClientDialog.vue'
 import ActivityTab from './components/ActivityTab.vue'
 import ClientTab from './components/ClientTab.vue'
 import ClientNotesTab from './components/ClientNotesTab.vue'
+import ContactTab from './components/ContactTab.vue'
 import { getClients } from './services/clientService'
 import SettingsDialog from './dialogs/SettingsDialog.vue'
 

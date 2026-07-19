@@ -9,6 +9,7 @@ use OCP\IRequest;
 use OCP\IUserSession;
 use OCA\TickyCRM\Service\NoteService;
 use Psr\Log\LoggerInterface;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 
 class NoteController extends Controller {
 
@@ -22,16 +23,12 @@ class NoteController extends Controller {
         parent::__construct($appName, $request);
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function index(int $clientId): JSONResponse {
         return new JSONResponse($this->service->findAll($clientId));
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function create(int $clientId, string $content, string $title = '', string $type = 'note'): JSONResponse {
         $user = $this->userSession->getUser();
         if (!$user) {
@@ -50,9 +47,7 @@ class NoteController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function update(int $id, string $content, string $title = '', string $type = 'note'): JSONResponse {
         try {
             $user = $this->userSession->getUser();
@@ -64,9 +59,7 @@ class NoteController extends Controller {
         }
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function destroy(int $id): JSONResponse {
         try {
             $this->service->delete($id);

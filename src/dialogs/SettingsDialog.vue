@@ -25,6 +25,20 @@
           />
         </div>
 
+        <div class="setting-row">
+          <NcTextField
+            v-model="newAddressBook"
+            label="Adressbuch hinzufügen"
+          />
+
+          <NcButton type="primary" :disabled="saving" @click="handleAddressbook">
+            <template #icon>
+              <IconCheck :size="16" />
+            </template>
+            {{ saving ? t('ticky_crm', 'settings_saving') : t('ticky_crm', 'settings_save') }}
+          </NcButton>
+        </div>
+
         <div class="settings-actions">
           <NcButton type="primary" :disabled="saving" @click="handleSave">
             <template #icon>
@@ -47,9 +61,7 @@ import { ref, reactive, onMounted } from 'vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { t } from '@nextcloud/l10n'
-import NcModal from '@nextcloud/vue/components/NcModal'
-import NcSelect from '@nextcloud/vue/components/NcSelect'
-import NcButton from '@nextcloud/vue/components/NcButton'
+import { NcModal,NcButton, NcTextField, NcSelect } from '@nextcloud/vue'
 import IconCheck from 'vue-material-design-icons/Check.vue'
 
 const emit = defineEmits(['close'])
@@ -75,6 +87,8 @@ const userSelectConfig = reactive({
   options:       [],
   value:         [],
 })
+
+const newAddressBook = ref('')
 
 const loadSettings = async () => {
   loading.value = true
@@ -107,6 +121,24 @@ const handleSave = async () => {
     await axios.post(url, {
       groups: groupSelectConfig.value.map(g => g.id),
       users:  userSelectConfig.value.map(u => u.id),
+    })
+    emit('close')
+  } catch (e) {
+    error.value = t('ticky_crm', 'settings_error_save')
+    console.error(e)
+  } finally {
+    saving.value = false
+  }
+}
+
+const handleAddressbook = async () => {
+  saving.value = true
+  error.value  = ''
+
+  try {
+    const url = generateUrl('/apps/ticky_crm/api/v1/settings/addressbook')
+    await axios.post(url, {
+      address_book: newAddressBook.value,
     })
     emit('close')
   } catch (e) {

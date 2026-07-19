@@ -79,46 +79,46 @@
         <legend>{{ t('ticky_crm', 'section_address') }}</legend>
         <div class="ticky-grid ticky-address-grid">
           <NcTextField
-              v-model="newClient.address.street"
-              :label="t('ticky_crm', 'field_street')"
-              :disabled="isLoading"
+            v-model="newClient.address.street"
+            :label="t('ticky_crm', 'field_street')"
+            :disabled="isLoading"
           />
 
           <NcTextField
-              v-model="newClient.address.house_number"
-              :label="t('ticky_crm', 'field_house_number')"
-              :disabled="isLoading"
+            v-model="newClient.address.house_number"
+            :label="t('ticky_crm', 'field_house_number')"
+            :disabled="isLoading"
           />
 
           <div class="ticky-grid-full-width address-row-inline">
             <NcTextField
-                v-model="newClient.address.postal_code"
-                :label="t('ticky_crm', 'field_postal_code')"
-                :disabled="isLoading"
-                class="field-plz"
+              v-model="newClient.address.postal_code"
+              :label="t('ticky_crm', 'field_postal_code')"
+              :disabled="isLoading"
+              class="field-plz"
             />
 
             <NcTextField
-                v-model="newClient.address.city"
-                :label="t('ticky_crm', 'field_city')"
-                :disabled="isLoading"
-                class="field-city"
+              v-model="newClient.address.city"
+              :label="t('ticky_crm', 'field_city')"
+              :disabled="isLoading"
+              class="field-city"
             />
 
             <NcTextField
-                v-model="newClient.address.country_code"
-                :label="t('ticky_crm', 'field_country_code')"
-                :disabled="isLoading"
-                class="field-country"
-                maxlength="2"
+              v-model="newClient.address.country_code"
+              :label="t('ticky_crm', 'field_country_code')"
+              :disabled="isLoading"
+              class="field-country"
+              maxlength="2"
             />
           </div>
 
           <NcTextField
-              v-model="newClient.address.address_addition"
-              :label="t('ticky_crm', 'field_address_addition')"
-              :disabled="isLoading"
-              class="ticky-grid-full-width"
+            v-model="newClient.address.address_addition"
+            :label="t('ticky_crm', 'field_address_addition')"
+            :disabled="isLoading"
+            class="ticky-grid-full-width"
           />
         </div>
       </fieldset>

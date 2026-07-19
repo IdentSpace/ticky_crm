@@ -2,37 +2,37 @@
   <div class="ticky-table-container">
     <table class="ticky-table">
       <thead>
-      <tr>
-        <th
+        <tr>
+          <th
             v-for="col in columns"
             :key="col.header"
             :style="{ maxWidth: col.maxWidth }"
             :class="{ 'has-max-width': col.maxWidth !== 'none' }"
-        >
-          <span class="cell-content">{{ col.header }}</span>
-        </th>
-      </tr>
+          >
+            <span class="cell-content">{{ col.header }}</span>
+          </th>
+        </tr>
       </thead>
       <tbody>
-      <tr
+        <tr
           v-for="(row, rowIndex) in value"
           :key="getRowKey(row, rowIndex)"
           :class="{ 'is-selected': isRowSelected(row, rowIndex) }"
           @click="handleRowClick(row, rowIndex)"
-      >
-        <td
+        >
+          <td
             v-for="col in columns"
             :key="col.header"
             :style="{ maxWidth: col.maxWidth }"
             :class="{ 'has-max-width': col.maxWidth !== 'none' }"
-        >
-          <div class="cell-content">
-            <slot :name="col.field" :data="row">
-              {{ row[col.field] }}
-            </slot>
-          </div>
-        </td>
-      </tr>
+          >
+            <div class="cell-content">
+              <slot :name="col.field" :data="row">
+                {{ row[col.field] }}
+              </slot>
+            </div>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -41,7 +41,7 @@
 <script setup>
 import { useSlots, computed, ref, watch } from 'vue'
 
-// eslint-disable-next-line
+ 
 const props = defineProps({
   value: { type: Array, required: true }
 })
