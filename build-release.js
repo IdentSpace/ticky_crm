@@ -12,7 +12,6 @@ const artifactDir = path.join(buildDir, 'artifacts', appName)
 // WICHTIG: Ein temporärer Ordner parallel zu deiner App, den Nextcloud im Container sehen kann
 // Da dein Hauptordner in 'custom_apps/ticky_crm' gemountet ist, liegt dieser hier in 'custom_apps/ticky_crm_release'
 const dockerSignDir = path.join(__dirname, '..', `${appName}_release`)
-const dockerSignAppinfo = path.join(dockerSignDir, 'appinfo')
 
 async function createRelease() {
     console.log(`🚀 Starte sauberen Build für ${appName}...`)

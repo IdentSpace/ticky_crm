@@ -1,4 +1,7 @@
 # Changelog
+## [0.2.0] - 2026-07-19
+- **Contact:** Implement contact relation between customer and contacts from contacts app.
+- **Address book:** The CRM Inits now a address book for crm contacts.
 
 ## [0.1.1] - 2026-07-01
 

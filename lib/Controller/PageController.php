@@ -8,6 +8,8 @@ use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCA\TickyCRM\Service\AccessService;
 use OCP\IUserSession;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 
 class PageController extends Controller {
 
@@ -21,10 +23,8 @@ class PageController extends Controller {
         parent::__construct($appName, $request);
     }
 
-    /**
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     public function index(): TemplateResponse|RedirectResponse  {
         $user = $this->userSession->getUser();
         $uid  = $user?->getUID();

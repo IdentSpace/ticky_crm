@@ -3,9 +3,22 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>ticky_crm</id>
     <name>Ticky CRM</name>
+    <version>0.2.0</version>
     <summary>Open-source CRM and client management for Nextcloud</summary>
-    <description>A modern, open-source CRM built from the ground up for Nextcloud. Ticky CRM provides seamless client management, automated interaction logs, and activity tracking. Please note: This project is currently in its early stages of development. We are actively looking for feedback, ideas, and feature suggestions—contributions from the community are highly welcome!</description>
-    <version>0.1.1</version>
+    <description>A modern, open-source CRM built from the ground up for Nextcloud.
+        Ticky CRM provides seamless client management, automated interaction logs, and activity tracking.
+
+        Milestones:
+        - Customer Management (done)
+        - Customer Notes (done)
+        - Contacts Integration (done)
+        - Products (next)
+        - File Integration (next)
+        - Helpdesk (future)
+        - Quotes (future)
+
+        Please note: This project is currently in its early stages of development.
+        We are actively looking for feedback, ideas, and feature suggestions—contributions from the community are highly welcome!</description>
     <licence>agpl</licence>
 
     <author mail="info@identspace.de" homepage="https://identspace.de">IdentSpace</author>
@@ -14,7 +27,7 @@
     <namespace>TickyCRM</namespace>
     <category>office</category>
     <category>workflow</category>
-      
+
     <screenshot>https://raw.githubusercontent.com/IdentSpace/ticky_crm/refs/heads/main/img/screenshots/clients.png</screenshot>
     <screenshot>https://raw.githubusercontent.com/IdentSpace/ticky_crm/refs/heads/main/img/screenshots/notes.png</screenshot>
 
@@ -25,5 +38,12 @@
     <dependencies>
         <php min-version="8.2"/>
         <nextcloud min-version="30" max-version="33"/>
+        <nextcloud min-version="6.0" name="contacts"/>
     </dependencies>
+
+    <repair-steps>
+        <post-migration>
+            <step>OCA\TickyCRM\Migration\InitializeDavResources</step>
+        </post-migration>
+    </repair-steps>
 </info>
