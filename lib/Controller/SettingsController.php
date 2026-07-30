@@ -10,7 +10,6 @@ use OCA\TickyCRM\Service\AccessService;
 use OCA\DAV\CardDAV\CardDavBackend;
 use OCP\App\IAppManager;
 use OCP\Server;
-use OCP\IUserSession;
 class SettingsController extends Controller {
 
     public function __construct(
@@ -18,7 +17,8 @@ class SettingsController extends Controller {
         IRequest $request,
         private AccessService $accessService,
         private IGroupManager $groupManager,
-        private IUserManager $userManager
+        private IUserManager $userManager,
+        private IAppManager $appManager,
     ) {
         parent::__construct($appName, $request);
     }
@@ -62,8 +62,7 @@ class SettingsController extends Controller {
     public function createAddressBook(): JSONResponse {
         try {
             // Prüfen, ob Contacts App installiert ist
-            $appManager = \OC::$server->get(IAppManager::class);
-            if (!$appManager->isInstalled('contacts')) {
+            if (!$this->appManager->isEnabledForAnyone('contacts')) {
                 return new JSONResponse([
                     'success' => false,
                     'error' => 'Contacts app is not installed'
