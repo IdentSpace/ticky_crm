@@ -1,6 +1,6 @@
 parameters:
     # Level 1 ist super für den Einstieg (prüft grundlegende Fehler und Typen)
-    level: 1
+    level: 5
 
     paths:
         - lib
@@ -9,3 +9,8 @@ parameters:
     scanDirectories:
         - ../../lib
         - ../../core
+
+    ignoreErrors:
+            - '#OCA\\DAV\\#'
+
+    reportUnmatchedIgnoredErrors: false

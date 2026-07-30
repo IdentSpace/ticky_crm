@@ -23,7 +23,6 @@ class Application extends App implements IBootstrap {
     public function register(IRegistrationContext $context): void {
         $context->registerMiddleware(AccessMiddleware::class);
         $context->registerNotifierService(Notifier::class);
-        $context->registerEventListener(CardDeletedEvent::class, CardDeletedListener::class);
     }
 
     public function boot(IBootContext $context): void {

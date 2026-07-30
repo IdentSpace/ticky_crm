@@ -25,7 +25,7 @@ class InitializeDavResources implements IRepairStep {
             $addressBook = $this->accessService->ensureSystemAddressBookProperties();
 
             if ($addressBook === null) {
-                $output->error('-> [Ticky CRM CLI] Adressbuch konnte nicht erstellt/geladen werden, Freigaben werden übersprungen.');
+                $output->warning('-> [Ticky CRM CLI] Adressbuch konnte nicht erstellt/geladen werden, Freigaben werden übersprungen.');
                 return;
             }
 
@@ -33,8 +33,8 @@ class InitializeDavResources implements IRepairStep {
             $this->accessService->syncAddressBookSharesFromSettings();
             $output->info('-> [Ticky CRM CLI] Fertig.');
         } catch (\Throwable $e) {
-            $output->error('-> [Ticky CRM CLI] Fehler: ' . get_class($e) . ': ' . $e->getMessage());
-            $output->error($e->getTraceAsString());
+            $output->warning('-> [Ticky CRM CLI] Fehler: ' . get_class($e) . ': ' . $e->getMessage());
+            $output->warning($e->getTraceAsString());
         }
     }
 }

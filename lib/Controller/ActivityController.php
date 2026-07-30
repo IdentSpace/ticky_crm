@@ -10,6 +10,8 @@ use OCP\IDBConnection;
 use OCP\L10N\IFactory as L10NFactory;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
+use OCP\AppFramework\Db\DoesNotExistException;
+
 
 class ActivityController extends Controller {
 
@@ -35,12 +37,6 @@ class ActivityController extends Controller {
     public function getClientActivities(string $uuid): DataResponse {
         try {
             $client = $this->mapper->findByUuid($uuid);
-            if (!$client) {
-                return new DataResponse([
-                    'success' => false,
-                    'message' => 'Client not found'
-                ], 404);
-            }
 
             $query = $this->db->getQueryBuilder();
             $query->select('*')
@@ -51,7 +47,9 @@ class ActivityController extends Controller {
                 ->orderBy('timestamp', 'DESC')
                 ->setMaxResults(50);
 
-            $rows = $query->execute()->fetchAll();
+            $result = $query->executeQuery();
+            $rows = $result->fetchAll();
+            $result->closeCursor();
 
             $l = $this->l10nFactory->get('ticky_crm');
 
@@ -78,6 +76,11 @@ class ActivityController extends Controller {
 
             return new DataResponse($result);
 
+        } catch (DoesNotExistException) {
+            return new DataResponse([
+                'success' => false,
+                'message' => 'Client not found'
+            ], 404);
         } catch (\Throwable $e) {
             return new DataResponse([
                 'success' => false,

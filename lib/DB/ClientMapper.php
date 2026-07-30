@@ -6,6 +6,9 @@ use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
+/**
+ * @template-extends QBMapper<Client>
+ */
 class ClientMapper extends QBMapper {
 
     public function __construct(IDBConnection $db) {
@@ -57,7 +60,7 @@ class ClientMapper extends QBMapper {
 
         // Wir nutzen hier den Doctrine-Query, mappen es aber manuell in die Address-Entity,
         // damit wir keinen Zirkelbezug im Constructor der Mapper erzeugen.
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $addresses = [];
 
         while ($row = $result->fetch()) {

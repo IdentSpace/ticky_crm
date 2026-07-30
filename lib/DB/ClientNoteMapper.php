@@ -5,6 +5,9 @@ namespace OCA\TickyCRM\DB;
 use OCP\AppFramework\Db\QBMapper;
 use OCP\IDBConnection;
 
+/**
+ * @template-extends QBMapper<ClientNote>
+ */
 class ClientNoteMapper extends QBMapper {
 
     public function __construct(IDBConnection $db) {

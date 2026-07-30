@@ -9,6 +9,7 @@ use OCP\IUserManager;
 use OCA\TickyCRM\Service\AccessService;
 use OCA\DAV\CardDAV\CardDavBackend;
 use OCP\App\IAppManager;
+use OCP\Server;
 use OCP\IUserSession;
 class SettingsController extends Controller {
 
@@ -73,7 +74,7 @@ class SettingsController extends Controller {
             $principalUri = 'principals/app/ticky';
 
             /** @var CardDavBackend $cardDavBackend */
-            $cardDavBackend = \OC::$server->get(CardDavBackend::class);
+            $cardDavBackend = Server::get(CardDavBackend::class);
 
             // System-Adressbücher abrufen (Nutzt dieselbe Methode, benötigt aber den System-Principal)
             $existing = $cardDavBackend->getAddressBooksForUser($principalUri);

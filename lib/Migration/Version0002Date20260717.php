@@ -2,16 +2,16 @@
 namespace OCA\TickyCRM\Migration;
 
 use Closure;
+use OCP\DB\ISchemaWrapper;
 use OCP\Migration\IOutput;
 use OCP\Migration\SimpleMigrationStep;
-use OCP\Server;
 
 class Version0002Date20260717 extends SimpleMigrationStep {
 
     public function preSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
     }
 
-    public function changeSchema(IOutput $output, \Closure $schemaClosure, array $options) {
+    public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
         /** @var ISchemaWrapper $schema */
         $schema = $schemaClosure();
 
@@ -24,7 +24,7 @@ class Version0002Date20260717 extends SimpleMigrationStep {
             $table->addColumn('id', 'integer', [
                 'autoincrement' => true,
                 'notnull' => true,
-                'length' => 11,
+                'unsigned' => true,
             ]);
 
             $table->addColumn('client_id', 'integer', [
@@ -35,7 +35,7 @@ class Version0002Date20260717 extends SimpleMigrationStep {
 
             $table->addColumn('card_id', 'integer', [
                 'notnull' => true,
-                'length' => 11,
+                'unsigned' => true,
                 'comment' => 'ID aus der Nextcloud oc_cards Tabelle',
             ]);
 
@@ -49,13 +49,18 @@ class Version0002Date20260717 extends SimpleMigrationStep {
             $table->addIndex(['card_id'], 'ticky_card_idx');
 
             $table->addUniqueIndex(['client_id', 'card_id'], 'ticky_uniq_mapping');
-            $table->addForeignKeyConstraint($tickyClientsTable, ['client_id'], ['id'], ['onDelete' => 'CASCADE']);
+            $table->addForeignKeyConstraint(
+                $schema->getTable($tickyClientsTable),
+                ['client_id'],
+                ['id'],
+                ['onDelete' => 'CASCADE'],
+                'ticky_crm_cc_client_fk'
+            );
         }
 
         return $schema;
     }
 
     public function postSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
-
     }
 }

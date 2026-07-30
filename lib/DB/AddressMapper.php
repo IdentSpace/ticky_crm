@@ -5,6 +5,9 @@ use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\IResultRunner;
 use OCP\IDBConnection;
 
+/**
+ * @template-extends QBMapper<Address>
+ */
 class AddressMapper extends QBMapper {
 
     public function __construct(IDBConnection $db) {

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2026-07-30
+- **Bug Fixes:** Migration exception
+- **Bug Fixes:** replace deprecated execute() to executeQuery()
+
 ## [0.2.1] - 2026-07-19
 - **Bug Fixes:** Migration naming issue.
 - **Bug Fixes:** Contact search dropdown slot was not correctly passed to the component.

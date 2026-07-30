@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # Fängt die "Methode wurde im Server entfernt"-Klasse von Fehlern ab.
+  # Läuft in Sekunden und ist der wichtigste Job von allen.
+  static-analysis:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ocp-version: ['^32.0', '^33.0', '^34.0']
+    name: PHPStan (ocp ${{ matrix.ocp-version }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install dependencies
+        run: |
+          composer require --dev --no-interaction --no-update \
+            nextcloud/ocp:${{ matrix.ocp-version }}
+          composer update --no-interaction --prefer-dist
+
+      - run: composer exec -- phpstan analyse --no-progress
+
+  lint-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  # Echte Installation gegen echte Datenbanken.
+  integration:
+    runs-on: ubuntu-latest
+    needs: [static-analysis]
+    strategy:
+      fail-fast: false
+      matrix:
+        nextcloud: ['32', '33', '34']
+        database: [mariadb, postgres]
+        include:
+          # SQLite nur einmal mitnehmen, das ist billig und deckt einen
+          # weiteren Schema-Dialekt ab.
+          - nextcloud: '33'
+            database: sqlite
+    name: Install NC ${{ matrix.nextcloud }} / ${{ matrix.database }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # Tags werden für den Upgrade-Test gebraucht
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Getestet wird, was ausgeliefert wird: gebautes JS + Prod-Vendor.
+      - name: Build app
+        run: |
+          composer install --no-dev --optimize-autoloader
+          npm ci
+          npm run build
+
+      - name: Frische Installation
+        env:
+          NC_VERSION: ${{ matrix.nextcloud }}
+          DB: ${{ matrix.database }}
+        run: ./tests/integration/run.sh
+
+      - name: Upgrade vom letzten Release
+        env:
+          NC_VERSION: ${{ matrix.nextcloud }}
+          DB: ${{ matrix.database }}
+          PORT: '8082'
+        run: |
+          PREV="$(git tag --sort=-v:refname | head -n1)"
+          if [ -z "$PREV" ]; then
+            echo "Kein Tag gefunden, Upgrade-Test übersprungen."
+            exit 0
+          fi
+          echo "Upgrade-Pfad: $PREV -> HEAD"
+          UPGRADE_FROM="$PREV" ./tests/integration/run.sh
