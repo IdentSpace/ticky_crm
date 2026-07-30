@@ -5,12 +5,10 @@ parameters:
     paths:
         - lib
 
-    # Damit weiß PHPStan, wo es den Nextcloud-Core zum Abgleichen findet
-    scanDirectories:
-        - ../../lib
-        - ../../core
-
     ignoreErrors:
             - '#OCA\\DAV\\#'
 
     reportUnmatchedIgnoredErrors: false
+
+    bootstrapFiles:
+            - vendor/autoload.php
