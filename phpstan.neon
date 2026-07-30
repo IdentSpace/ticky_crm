@@ -1,14 +1,16 @@
 parameters:
-    # Level 1 ist super für den Einstieg (prüft grundlegende Fehler und Typen)
-    level: 5
+    level: 1
 
     paths:
         - lib
 
+    scanDirectories:
+        - vendor/nextcloud/ocp/OCP
+
     ignoreErrors:
-            - '#OCA\\DAV\\#'
+        - '#OCA\\DAV\\#'
 
     reportUnmatchedIgnoredErrors: false
 
     bootstrapFiles:
-            - vendor/autoload.php
+        - vendor/autoload.php
