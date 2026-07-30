@@ -50,7 +50,7 @@ occ() { docker exec -u www-data "$APP_CT" php occ "$@"; }
 wait_for() {
     local desc="$1"; shift
     local i
-    for i in $(seq 1 60); do
+    for i in $(seq 1 90); do
         if "$@" >/dev/null 2>&1; then return 0; fi
         sleep 2
     done
@@ -136,7 +136,7 @@ esac
 
 docker run -d --name "$APP_CT" --network "$NETWORK" \
     -p "127.0.0.1:$PORT:80" "nextcloud:$NC_VERSION" >/dev/null
-wait_for "Nextcloud-Quellen" docker exec "$APP_CT" test -f /var/www/html/occ
+wait_for "Nextcloud-Quellen" curl -sf -o /dev/null "http://localhost:$PORT/status.php"
 
 log "Installiere Nextcloud"
 occ maintenance:install \
