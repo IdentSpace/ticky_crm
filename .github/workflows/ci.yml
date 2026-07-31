@@ -90,11 +90,13 @@ jobs:
           NC_VERSION: ${{ matrix.nextcloud }}
           DB: ${{ matrix.database }}
           PORT: '8082'
-        run: |
-          PREV="$(git tag --sort=-v:refname | head -n1)"
-          if [ -z "$PREV" ]; then
-            echo "Kein Tag gefunden, Upgrade-Test übersprungen."
-            exit 0
-          fi
-          echo "Upgrade-Pfad: $PREV -> HEAD"
-          UPGRADE_FROM="$PREV" ./tests/integration/run.sh
+          UPGRADE_FROM: v0.1.1
+        run: bash tests/integration/run.sh
+#        run: |
+#          PREV="$(git tag --sort=-v:refname | head -n1)"
+#          if [ -z "$PREV" ]; then
+#            echo "Kein Tag gefunden, Upgrade-Test übersprungen."
+#            exit 0
+#          fi
+#          echo "Upgrade-Pfad: $PREV -> HEAD"
+#          UPGRADE_FROM="$PREV" ./tests/integration/run.sh
