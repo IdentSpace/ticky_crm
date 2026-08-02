@@ -15,6 +15,11 @@ npm run build:code
 npm run build:translations
 ```
 
+### PHPStan (PHP TEsting framework)
+```
+vendor/phpstan/phpstan/phpstan
+```
+
 ### Nextclous
 ```
 php occ files:cleanup
