@@ -2,9 +2,6 @@
 Points found to be changed:
 
 ## Build
-- Move build-release.js into scripts folder and change in package.json scripts/release
-- Rename package.json scripts/build -> scripts/build:code
-- Add package.json scripts/build -> npm run build:code && npm run build:translations
 - PHPStan:
     - Add symbolic link from nextcloud dir to "nextcloud"
     - Change phpstan.neon from ../.. to ./nextcloud
