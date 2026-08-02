@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 import * as tar from 'tar'
 import { execSync } from 'child_process' // Neu für den OCC-Aufruf
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const __dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const appName = 'ticky_crm'
 const buildDir = path.join(__dirname, 'build')
 const artifactDir = path.join(buildDir, 'artifacts', appName)
