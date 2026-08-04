@@ -42,19 +42,6 @@ An Open Source, privacy-first Customer Relationship Management (CRM) app built f
 - **Database:** MariaDB/MySQL or PostgreSQL (supported by Nextcloud Core)
 
 ---
-## Development
-```
-npm run dev
-npm run lint
-npm run lint:fix
-npm run build
-npm run build:translations
-
-
-php occ files:cleanup
-
-```
----
 
 ⚖️ License  
 This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0) - see the LICENSE file for details.
