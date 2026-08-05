@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --watch",
-    "build": "vite build",
+    "build:code": "vite build",
     "build:translations": "node scripts/build-translations.js",
+    "build": "npm run build:code && npm run build:translations",
     "lint": "eslint src/",
     "lint:fix": "eslint . --fix",
-    "release": "npm run build && node build-release.js"
+    "release": "npm run build && node scripts/build-release.js"
   },
   "dependencies": {
     "@nextcloud/axios": "^2.6.0",
