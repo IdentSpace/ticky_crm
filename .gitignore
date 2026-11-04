@@ -22,3 +22,6 @@ css/
 # CRITICAL: Ignoriert den lokalen Release-Build-Ordner unseres Node-Skripts
 /build/
 .nextcloud/
+.env
+.env.*
+!.env.example

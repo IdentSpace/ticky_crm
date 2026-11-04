@@ -1,5 +1,42 @@
 # Developer documentation
 
+## Docker development environment
+
+Requires Docker Compose (Linux containers), Node.js and npm. Run from the repo root.
+
+1. Copy `.env.example` to `.env` (`Copy-Item` on PowerShell, `cp` on Linux/macOS).
+2. Set `NC_VERSION` (default: `33`, supported: `32`?`34`) and `NC_PORT` (default: `8080`).
+3. Build and start:
+
+```sh
+npm ci
+npm run build
+docker compose up -d --build --wait
+```
+
+Open http://localhost:8080. Login: `admin` / `admin-dev-password` (local development only).
+Contacts and Ticky CRM are activated automatically; the first start requires internet.
+The repo is mounted directly; Nextcloud and MariaDB data persist in Docker volumes.
+
+Use `npm run dev` to rebuild frontend changes, then reload the browser.
+For translations, run `npm run build:translations`.
+
+```sh
+docker compose logs -f nextcloud
+docker compose exec --user www-data nextcloud php occ status
+docker compose down
+```
+
+`down` preserves data; `down --volumes` permanently deletes the stack's data.
+Nextcloud downgrades require fresh volumes. For parallel versions, use a separate
+project and port via `.env.nc32` (`NC_VERSION=32`, `NC_PORT=8082`):
+
+```sh
+docker compose --env-file .env.nc32 -p ticky-crm-nc32 up -d --build --wait
+```
+
+Keep the same `--env-file` and `-p` options for subsequent commands.
+
 ## IDE
 Use an IDE you like, but check if it can handle Markdown and Mermaid correctly.
 

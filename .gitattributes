@@ -1,0 +1,2 @@
+docker/dev/*.sh text eol=lf
+docker/dev/Dockerfile text eol=lf
