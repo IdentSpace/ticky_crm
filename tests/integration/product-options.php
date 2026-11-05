@@ -83,9 +83,17 @@ try {
     $uid = 'options-test-' . $token;
     $password = bin2hex(random_bytes(16));
     $testUser = $users->createUser($uid, $password);
+    expectOptions(403, optionsApi('GET', '/product-options', null, $uid . ':' . $password));
     $allowed = json_decode($originalUsers === $missing ? '[]' : $originalUsers, true);
     $config->setAppValue('ticky_crm', 'allowed_users', json_encode(array_merge($allowed, [$uid])));
-    $read = expectOptions(200, optionsApi('GET', '/product-options', null, $uid . ':' . $password));
+    // CLI and web requests have separate local app-config caches (NC caches for 3 seconds).
+    $deadline = microtime(true) + 10;
+    do {
+        $response = optionsApi('GET', '/product-options', null, $uid . ':' . $password);
+        if ($response[0] !== 403 || microtime(true) >= $deadline) break;
+        usleep(250000);
+    } while (true);
+    $read = expectOptions(200, $response);
     checkOptions($read['can_manage'] === false, 'Regular user received management privileges');
     expectOptions(403, optionsApi('POST', '/product-options', ['options' => $options], $uid . ':' . $password));
     echo "Product options settings/validation/permissions checks passed.\n";

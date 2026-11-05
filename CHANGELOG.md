@@ -1,6 +1,7 @@
 # Changelog
 
 ## [0.3.3] - Unreleased
+- Wait for Nextcloud app-config cache refresh in the product options permission test.
 - Use PHP 8.3 and matching Composer platform settings for NC 35 static analysis.
 - Run CI on pushes to all branches and on pull requests.
 - Support Nextcloud 32-35 with PHPStan and installation tests in CI.
