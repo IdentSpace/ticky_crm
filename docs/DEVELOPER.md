@@ -85,6 +85,17 @@ php occ files:cleanup
     - Execute ```./tests/integration/local_run_all.sh``` to run all integration test of Github locally
 
 ## Testing
+
+Persistence and API checks (run `occ upgrade` first):
+```sh
+docker compose exec --user www-data nextcloud php occ upgrade
+docker compose exec --user www-data nextcloud php custom_apps/ticky_crm/tests/integration/products.php
+docker compose exec --user www-data nextcloud php custom_apps/ticky_crm/tests/integration/products-api.php
+docker compose exec --user www-data nextcloud php custom_apps/ticky_crm/tests/integration/clients-api.php
+docker compose exec --user www-data nextcloud php custom_apps/ticky_crm/tests/integration/client-products-api.php
+docker compose exec --user www-data nextcloud php custom_apps/ticky_crm/tests/integration/product-options.php
+```
+
 ### Local
 * ```npm run lint``` -> Runs linting test on src directory
 * ```npm run test:phpstan``` -> Runs PHPStan on src directory

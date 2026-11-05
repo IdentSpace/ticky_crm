@@ -6,10 +6,8 @@
     :buttons="buttons"
     :close-on-click-outside="!isLoading"
   >
-    <div class="ticky-form-container">
-      <div v-if="errorMessage" class="ticky-error-banner">
-        {{ errorMessage }}
-      </div>
+    <form ref="form" class="ticky-form-container" @submit.prevent="handleSubmit">
+      <FormError v-if="errorMessage" :message="errorMessage" />
 
       <fieldset class="ticky-fieldset">
         <legend>{{ t('ticky_crm', 'section_master_data') }}</legend>
@@ -18,6 +16,8 @@
             v-model="newClient.client_number"
             :label="t('ticky_crm', 'field_client_number')"
             :disabled="isLoading"
+            maxlength="64"
+            pattern=".*\S.*"
             required
           />
 
@@ -25,6 +25,8 @@
             v-model="newClient.name"
             :label="t('ticky_crm', 'field_name')"
             :disabled="isLoading"
+            maxlength="255"
+            pattern=".*\S.*"
             required
           />
 
@@ -151,7 +153,7 @@
           />
         </div>
       </fieldset>
-    </div>
+    </form>
   </NcDialog>
 </template>
 
@@ -159,7 +161,8 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { t } from '@nextcloud/l10n'
 import { NcDialog, NcTextField, NcSelect } from '@nextcloud/vue'
-import { createClient } from '../services/clientService'
+import { createClient, clientError } from '../services/clientService'
+import FormError from '../components/FormError.vue'
 
 const props = defineProps({
   open: { type: Boolean, required: true },
@@ -168,11 +171,12 @@ const emit = defineEmits(['update:open', 'client-created'])
 
 const showDialog = computed({
   get: () => props.open,
-  set: (value) => emit('update:open', value),
+  set: (value) => { if (!isLoading.value) emit('update:open', value) },
 })
 
 const isLoading    = ref(false)
 const errorMessage = ref('')
+const form = ref(null)
 
 const typeSelectConfig = reactive({
   inputLabel: t('ticky_crm', 'field_type'),
@@ -232,10 +236,7 @@ watch(showDialog, (isOpen) => {
 })
 
 const handleSubmit = async () => {
-  if (!newClient.value.name.trim() || !newClient.value.client_number.trim()) {
-    errorMessage.value = t('ticky_crm', 'error_required_fields')
-    return
-  }
+  if (isLoading.value || !form.value.reportValidity()) return false
 
   isLoading.value    = true
   errorMessage.value = ''
@@ -245,6 +246,8 @@ const handleSubmit = async () => {
 
     const payload = {
       ...clientData,
+      client_number: clientData.client_number.trim(),
+      name: clientData.name.trim(),
       type:   typeSelectConfig.value?.id   ?? 'company',
       status: statusSelectConfig.value?.id ?? 'lead',
       addresses: (address.street.trim() || address.city.trim()) ? [address] : []
@@ -252,28 +255,28 @@ const handleSubmit = async () => {
 
     const createdClient = await createClient(payload)
     emit('client-created', createdClient)
-    showDialog.value = false
+    emit('update:open', false)
   } catch (error) {
-    errorMessage.value = error.message || t('ticky_crm', 'error_save')
+    errorMessage.value = clientError(error)
   } finally {
     isLoading.value = false
   }
+  // Keep NcDialog open for failed validation and API errors.
+  return false
 }
 
 const buttons = computed(() => [
   {
     label:    t('ticky_crm', 'client_cancel'),
-    type:     'normal',
+    variant:  'secondary',
     callback: () => { showDialog.value = false },
     disabled: isLoading.value,
   },
   {
     label:    isLoading.value ? t('ticky_crm', 'client_create_saving') : t('ticky_crm', 'client_create_submit'),
-    type:     'primary',
+    variant:  'primary',
     callback: handleSubmit,
-    disabled: isLoading.value
-        || !newClient.value.name.trim()
-        || !newClient.value.client_number.trim(),
+    disabled: isLoading.value,
   },
 ])
 </script>
@@ -288,15 +291,6 @@ const buttons = computed(() => [
   max-width: 100%;
   box-sizing: border-box;
   margin: 0 auto;
-}
-
-.ticky-error-banner {
-  background-color: var(--color-error-background);
-  color: var(--color-error);
-  border-left: 4px solid var(--color-error);
-  padding: 12px 16px;
-  border-radius: var(--border-radius);
-  font-size: 13px;
 }
 
 .ticky-fieldset {

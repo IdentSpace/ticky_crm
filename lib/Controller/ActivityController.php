@@ -3,90 +3,69 @@
 namespace OCA\TickyCRM\Controller;
 
 use OCA\TickyCRM\DB\ClientMapper;
+use OCA\TickyCRM\DB\ProductMapper;
 use OCP\AppFramework\Controller;
-use OCP\AppFramework\Http\DataResponse;
-use OCP\IRequest;
-use OCP\IDBConnection;
-use OCP\L10N\IFactory as L10NFactory;
+use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
-use OCP\AppFramework\Db\DoesNotExistException;
-
+use OCP\AppFramework\Http\DataResponse;
+use OCP\IDBConnection;
+use OCP\IRequest;
+use OCP\L10N\IFactory;
+use Psr\Log\LoggerInterface;
 
 class ActivityController extends Controller {
-
-    private ClientMapper $mapper;
-    private IDBConnection $db;
-    private L10NFactory $l10nFactory;
-
-    public function __construct(
-        string $appName,
-        IRequest $request,
-        ClientMapper $mapper,
-        IDBConnection $db,
-        L10NFactory $l10nFactory
-    ) {
+    public function __construct(string $appName, IRequest $request, private ClientMapper $clients, private ProductMapper $products,
+        private IDBConnection $db, private IFactory $l10nFactory, private LoggerInterface $logger) {
         parent::__construct($appName, $request);
-        $this->mapper = $mapper;
-        $this->db = $db;
-        $this->l10nFactory = $l10nFactory;
     }
 
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function getClientActivities(string $uuid): DataResponse {
+        return $this->respond(fn() => $this->load('client', $this->clients->findByUuid($uuid, false)->getId()));
+    }
+
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
+    public function getProductActivities(string $productUuid): DataResponse {
+        return $this->respond(fn() => $this->load('product', $this->products->findByUuid($productUuid)->getId()));
+    }
+
+    private function respond(callable $action): DataResponse {
         try {
-            $client = $this->mapper->findByUuid($uuid);
-
-            $query = $this->db->getQueryBuilder();
-            $query->select('*')
-                ->from('activity')
-                ->where($query->expr()->eq('app', $query->createNamedParameter('ticky_crm')))
-                ->andWhere($query->expr()->eq('object_type', $query->createNamedParameter('client')))
-                ->andWhere($query->expr()->eq('object_id', $query->createNamedParameter((int)$client->getId())))
-                ->orderBy('timestamp', 'DESC')
-                ->setMaxResults(50);
-
-            $result = $query->executeQuery();
-            $rows = $result->fetchAll();
-            $result->closeCursor();
-
-            $l = $this->l10nFactory->get('ticky_crm');
-
-            $result = array_map(function($row) use ($l) {
-                $subject = $row['subject'];
-                $params = json_decode($row['subjectparams'], true) ?? [];
-
-                $translatedSubject = (string)$l->t($subject);
-                $replacements = [];
-                foreach ($params as $key => $value) {
-                    $replacements['{' . $key . '}'] = (string)$value;
-                }
-                $parsedSubject = strtr($translatedSubject, $replacements);
-
-                return [
-                    'id'            => (int)$row['activity_id'],
-                    'subject'       => $subject,
-                    'parsedSubject' => $parsedSubject,
-                    'objectName'    => $params['name'] ?? null, // <- aus subjectparams statt nicht-existenter DB-Spalte
-                    'timestamp'     => (int)$row['timestamp'],
-                    'user'          => $row['user']
-                ];
-            }, $rows);
-
-            return new DataResponse($result);
-
+            return new DataResponse($action());
         } catch (DoesNotExistException) {
-            return new DataResponse([
-                'success' => false,
-                'message' => 'Client not found'
-            ], 404);
+            return new DataResponse(['error' => 'activity_object_not_found'], 404);
         } catch (\Throwable $e) {
-            return new DataResponse([
-                'success' => false,
-                'error'   => 'Could not load activities',
-                'message' => $e->getMessage()
-            ], 500);
+            $this->logger->error('Could not load CRM activities', ['app' => 'ticky_crm', 'exception' => $e]);
+            return new DataResponse(['error' => 'activity_error_load'], 500);
         }
+    }
+
+    private function load(string $type, int $id): array {
+        $query = $this->db->getQueryBuilder();
+        $query->select('*')->from('activity')
+            ->where($query->expr()->eq('app', $query->createNamedParameter('ticky_crm')))
+            ->andWhere($query->expr()->eq('object_type', $query->createNamedParameter($type)))
+            ->andWhere($query->expr()->eq('object_id', $query->createNamedParameter($id)))
+            ->orderBy('timestamp', 'DESC')->addOrderBy('activity_id', 'DESC')->setMaxResults(50);
+        $result = $query->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+        $l10n = $this->l10nFactory->get('ticky_crm');
+        return array_map(function ($row) use ($l10n): array {
+            $params = json_decode($row['subjectparams'], true) ?? [];
+            $replacements = [];
+            foreach ($params as $key => $value) {
+                if (is_scalar($value) || $value === null) $replacements['{' . $key . '}'] = (string)$value;
+            }
+            return [
+                'id' => (int)$row['activity_id'], 'subject' => $row['subject'],
+                'parsedSubject' => strtr((string)$l10n->t($row['subject']), $replacements),
+                'objectName' => $params['name'] ?? null, 'timestamp' => (int)$row['timestamp'],
+                'user' => $row['user'], 'parameters' => $params,
+            ];
+        }, $rows);
     }
 }

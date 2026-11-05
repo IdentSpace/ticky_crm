@@ -107,15 +107,16 @@ import IconPhone from 'vue-material-design-icons/PhoneOutline.vue'
 
 const props = defineProps({
   clientId: {
-    type: Number,
+    type: String,
     required: true,
   },
 })
 
 const searchQuery = ref('')
-defineEmits(['view-details'])
+const emit = defineEmits(['view-details', 'count-changed'])
 
 const linkedContacts = ref([])
+watch(() => linkedContacts.value.length, count => emit('count-changed', { clientUuid: props.clientId, count }))
 const searchResults = ref([])
 const selectedContact = ref(null)
 const isSearching = ref(false)

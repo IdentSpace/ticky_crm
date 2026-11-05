@@ -1,8 +1,6 @@
 <template>
   <div class="sidebar-content">
-    <div v-if="errorMessage" class="error-banner">
-      {{ errorMessage }}
-    </div>
+    <FormError v-if="errorMessage" :message="errorMessage" class="error-banner" />
 
     <div class="sidebar-form">
       <fieldset class="sidebar-fieldset">
@@ -177,6 +175,7 @@ import IconCheck from 'vue-material-design-icons/Check.vue'
 import IconDelete from 'vue-material-design-icons/Delete.vue'
 import IconPlus from 'vue-material-design-icons/Plus.vue'
 import { updateClient, deleteClient } from '../services/clientService'
+import FormError from './FormError.vue'
 
 const props = defineProps({
   client: { type: Object, required: true }
@@ -204,8 +203,18 @@ const statusSelectConfig = reactive({
   value: null,
 })
 
-const editableClient = ref(JSON.parse(JSON.stringify(props.client)))
-if (!editableClient.value.addresses) editableClient.value.addresses = []
+const toEditableClient = (client) => {
+  const value = JSON.parse(JSON.stringify(client))
+  for (const field of ['contact_email', 'invoice_email', 'phone', 'website', 'vat_id', 'tax_number', 'register_court', 'register_number']) {
+    value[field] ??= ''
+  }
+  value.addresses = (value.addresses ?? []).map(address => {
+    for (const field of ['label', 'street', 'house_number', 'address_addition', 'postal_code', 'city', 'country_code']) address[field] ??= ''
+    return address
+  })
+  return value
+}
+const editableClient = ref(toEditableClient(props.client))
 
 const isLoading      = ref(false)
 const errorMessage   = ref('')
@@ -214,8 +223,7 @@ typeSelectConfig.value   = toOption(typeSelectConfig.options,   props.client.typ
 statusSelectConfig.value = toOption(statusSelectConfig.options, props.client.status)
 
 watch(() => props.client, (newClient) => {
-  editableClient.value     = JSON.parse(JSON.stringify(newClient))
-  if (!editableClient.value.addresses) editableClient.value.addresses = []
+  editableClient.value = toEditableClient(newClient)
 
   typeSelectConfig.value   = toOption(typeSelectConfig.options,   newClient.type)
   statusSelectConfig.value = toOption(statusSelectConfig.options, newClient.status)
@@ -319,11 +327,6 @@ const handleDelete = async () => {
 
 .error-banner {
   margin: 16px 24px 0;
-  color: var(--color-error);
-  background-color: var(--color-error-background);
-  padding: 12px;
-  border-radius: var(--border-radius);
-  font-size: 13px;
 }
 
 .sidebar-address-item {

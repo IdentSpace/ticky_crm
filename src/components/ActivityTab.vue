@@ -1,6 +1,12 @@
 <template>
   <div class="ticky-activities-container">
-    <div v-if="loading" class="activity-state activity-loading">
+    <div v-if="error" class="activity-state" role="alert">
+      <p>{{ error }}</p>
+      <NcButton @click="fetchActivities">
+        {{ t('ticky_crm', 'product_retry') }}
+      </NcButton>
+    </div>
+    <div v-else-if="loading" class="activity-state activity-loading">
       <!--      <NcLoadingIcon :size="24" />-->
       <p>{{ t('ticky_crm', 'loading_activities') }}</p>
     </div>
@@ -24,43 +30,53 @@
           </span>
         </div>
 
-        <div class="activity-content" v-html="activity.parsedSubject + ' ' + activity.objectName" />
+        <div class="activity-content">
+          {{ activity.parsedSubject }} {{ activity.objectName }}
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { t } from '@nextcloud/l10n'
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router'
+import NcButton from '@nextcloud/vue/components/NcButton'
 
 const props = defineProps({
   clientUuid: {
     type: String,
-    required: true
-  }
+    default: ''
+  },
+  productUuid: { type: String, default: '' },
+  active: { type: Boolean, default: true },
 })
 
 const activities = ref([])
 const loading = ref(false)
+const error = ref('')
+let requestId = 0
 
 /**
  * Holt die Aktivitäten vom neuen ActivityController
  */
 const fetchActivities = async () => {
-  if (!props.clientUuid) return
-
+  const uuid = props.productUuid || props.clientUuid
+  if (!uuid) return
+  const current = ++requestId
   loading.value = true
+  error.value = ''
   try {
-    const url = generateUrl(`/apps/ticky_crm/api/v1/clients/${props.clientUuid}/activities`)
+    const resource = props.productUuid ? 'products' : 'clients'
+    const url = generateUrl(`/apps/ticky_crm/api/v1/${resource}/${encodeURIComponent(uuid)}/activities`)
     const response = await axios.get(url)
-    activities.value = response.data
-  } catch (error) {
-    console.error('Fehler beim Laden der Ticky-Aktivitäten:', error)
+    if (current === requestId) activities.value = response.data
+  } catch {
+    if (current === requestId) error.value = t('ticky_crm', 'activity_error_load')
   } finally {
-    loading.value = false
+    if (current === requestId) loading.value = false
   }
 }
 
@@ -78,13 +94,9 @@ const formatTimestamp = (timestamp) => {
   })
 }
 
-onMounted(() => {
-  fetchActivities()
-})
-
-watch(() => props.clientUuid, () => {
-  fetchActivities()
-})
+watch(() => [props.clientUuid, props.productUuid, props.active], () => {
+  if (props.active) fetchActivities()
+}, { immediate: true })
 </script>
 
 <style lang="scss" scoped>
