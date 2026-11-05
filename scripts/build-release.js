@@ -10,8 +10,7 @@ const buildDir = path.join(__dirname, 'build')
 const artifactDir = path.join(buildDir, 'artifacts', appName)
 
 // WICHTIG: Ein temporärer Ordner parallel zu deiner App, den Nextcloud im Container sehen kann
-// Da dein Hauptordner in 'custom_apps/ticky_crm' gemountet ist, liegt dieser hier in 'custom_apps/ticky_crm_release'
-const dockerSignDir = path.join(__dirname, '..', `${appName}_release`)
+const dockerSignDir = path.join(buildDir, 'signing', appName)
 
 async function createRelease() {
     console.log(`🚀 Starte sauberen Build für ${appName}...`)
@@ -43,10 +42,9 @@ async function createRelease() {
     try {
         const containerKey = `/var/www/html/custom_apps/${appName}/.nextcloud/${appName}.key`
         const containerCrt = `/var/www/html/custom_apps/${appName}/.nextcloud/${appName}.crt`
-        const containerReleasePath = `/var/www/html/custom_apps/${appName}_release`
+        const containerReleasePath = `/var/www/html/custom_apps/${appName}/build/signing/${appName}`
 
-        // Tausche 'nextcloud-docker-container-name' mit dem echten Namen deines Docker-Containers aus!
-        const occCommand = `docker exec -u www-data nextcloud-dev-nextcloud-1 php occ integrity:sign-app --privateKey=${containerKey} --certificate=${containerCrt} --path=${containerReleasePath}`
+        const occCommand = `docker compose exec --user www-data nextcloud php occ integrity:sign-app --privateKey=${containerKey} --certificate=${containerCrt} --path=${containerReleasePath}`
 
         execSync(occCommand, { stdio: 'inherit' })
         console.log('✅ Signierung im Container erfolgreich!')
