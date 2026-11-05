@@ -1,5 +1,19 @@
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
+import { t } from '@nextcloud/l10n';
+
+export const clientError = (error) => {
+    const data = error.response?.data;
+    if (data?.error === 'duplicate_client_number') {
+        return t('ticky_crm', 'error_duplicate_client_number');
+    }
+    if (data?.error === 'client_invalid_field') {
+        const key = `field_${data.field}`;
+        const label = t('ticky_crm', key);
+        return t('ticky_crm', 'client_invalid_field', { field: label === key ? data.field : label });
+    }
+    return t('ticky_crm', 'error_save');
+};
 
 export const getClients = async () => {
     const url = generateUrl('/apps/ticky_crm/api/v1/clients');
@@ -31,9 +45,7 @@ export const updateClient = async (client) => {
         // Gibt den frisch aktualisierten Kunden vom Server zurück
         return response.data
     } catch (error) {
-        throw new Error(
-            error.response?.data?.message || 'Der Kunde konnte nicht aktualisiert werden.'
-        )
+        throw new Error(clientError(error))
     }
 }
 

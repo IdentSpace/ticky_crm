@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.3] - Unreleased
+- Fix contact foreign key detection with the NC 35 schema API during installation.
+- Wait for Nextcloud app-config cache refresh in the product options permission test.
+- Use PHP 8.3 and matching Composer platform settings for NC 35 static analysis.
+- Run CI on pushes to all branches and on pull requests.
+- Support Nextcloud 32-35 with PHPStan and installation tests in CI.
+- Product activity tab with create/update/delete and customer link/update/unlink events.
+- Customer activities for changes to agreed positions and linked catalog products.
+- Activities for product assignment, assignment removal and catalog deletion.
+- Configurable product categories, types, procurement, status, units and currencies with defaults in settings.
+- Customer product tab with quantities and independently stored agreed prices.
+- Consistent comma decimal display in forms and product lists.
+- Product navigation, list, create dialog and editable details with validated CRUD API.
+- Product database with current sales and optional purchase prices, tax rates, units and categorization.
+
 ## [0.2.2] - 2026-07-30
 - **Bug Fixes:** Migration exception
 - **Bug Fixes:** replace deprecated execute() to executeQuery()

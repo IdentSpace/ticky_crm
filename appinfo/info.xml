@@ -3,7 +3,7 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>ticky_crm</id>
     <name>Ticky CRM</name>
-    <version>0.2.2</version>
+    <version>0.3.3</version>
     <summary>Open-source CRM and client management for Nextcloud</summary>
     <description>A modern, open-source CRM built from the ground up for Nextcloud.
         Ticky CRM provides seamless client management, automated interaction logs, and activity tracking.
@@ -12,7 +12,7 @@
         - Customer Management (done)
         - Customer Notes (done)
         - Contacts Integration (done)
-        - Products (next)
+        - Products (done)
         - File Integration (next)
         - Deck Integration (next)
         - Helpdesk (future)
@@ -38,7 +38,7 @@
 
     <dependencies>
         <php min-version="8.2"/>
-        <nextcloud min-version="32" max-version="34"/>
+        <nextcloud min-version="32" max-version="35"/>
     </dependencies>
 
     <repair-steps>

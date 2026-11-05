@@ -29,7 +29,9 @@
       </template>
     </NcAppNavigation>
 
-    <NcAppContent :page-heading="t('ticky_crm', 'page_heading_clients')">
+    <ProductsView v-if="activeNav === 'products'" />
+
+    <NcAppContent v-if="activeNav === 'clients'" :page-heading="t('ticky_crm', 'page_heading_clients')">
       <TickyHeader
         :title="t('ticky_crm', 'app_title')"
         :subtitle="n('ticky_crm', 'client_count_singular', 'client_count_plural', clients.length, { count: clients.length })"
@@ -44,11 +46,19 @@
         </template>
       </TickyHeader>
 
-      <TickyTable :value="clients" @row-click="selectedClient = $event">
+      <TickyTable :value="sortedClients" @row-click="selectedClient = $event">
         <TickyColumn field="name" :header="t('ticky_crm', 'column_name')" max-width="250px" />
         <TickyColumn field="client_number" :header="t('ticky_crm', 'column_client_number')" />
         <TickyColumn field="contact_email" :header="t('ticky_crm', 'column_email')" />
         <TickyColumn field="phone" :header="t('ticky_crm', 'column_phone')" />
+        <TickyColumn field="product_count" :header="t('ticky_crm', 'nav_products')" />
+        <TickyColumn field="contact_count" :header="t('ticky_crm', 'column_contacts')" />
+        <template #product_count="{ data }">
+          {{ data.product_count ?? 0 }}
+        </template>
+        <template #contact_count="{ data }">
+          {{ data.contact_count ?? 0 }}
+        </template>
       </TickyTable>
 
       <NewClientDialog
@@ -58,7 +68,7 @@
     </NcAppContent>
 
     <NcAppSidebar
-      v-if="selectedClient"
+      v-if="activeNav === 'clients' && selectedClient"
       :title="selectedClient.name"
       :subtitle="selectedClient.client_number"
       :active="activeSidebarTab"
@@ -83,21 +93,23 @@
         <ClientNotesTab :client-id="selectedClient.id" />
       </NcAppSidebarTab>
 
-      <NcAppSidebarTab id="contacts" name="Kontakte" icon="icon-contacts-dark">
-        <ContactTab :client-id="selectedClient.uuid" />
+      <NcAppSidebarTab id="contacts" :name="t('ticky_crm', 'tab_contacts')" icon="icon-contacts-dark">
+        <ContactTab :key="selectedClient.uuid" :client-id="selectedClient.uuid" @count-changed="updateClientCount('contact_count', $event)" />
       </NcAppSidebarTab>
 
-      <NcAppSidebarTab id="ticky-activities" :name="t('ticky_crm', 'tab_activities')" :tab-index="2">
+      <NcAppSidebarTab id="ticky-products" :name="t('ticky_crm', 'nav_products')" :tab-index="2">
         <template #icon>
-          <svg
-            id="mdi-lightning-bolt"
-            xmlns="http://www.w3.org/2000/svg"
-            height="20px"
-            viewBox="0 0 24 24"
-          ><path d="M11 15H6L13 1V9H18L11 23V15Z" /></svg>
+          <IconPackage :size="20" />
         </template>
-        <ActivityTab :client-uuid="selectedClient.uuid" />
+        <ClientProductsTab :key="selectedClient.uuid" :client-uuid="selectedClient.uuid" @count-changed="updateClientCount('product_count', $event)" />
       </NcAppSidebarTab>
+
+      <ActivitySidebarTab
+        id="ticky-activities"
+        :order="3"
+        :client-uuid="selectedClient.uuid"
+        :active="activeSidebarTab === 'ticky-activities'"
+      />
     </NcAppSidebar>
   </NcContent>
 </template>
@@ -119,27 +131,33 @@ import IconAccount from 'vue-material-design-icons/Account.vue'
 import IconAccountMultiple from 'vue-material-design-icons/AccountMultiple.vue'
 import IconNoteText from 'vue-material-design-icons/NoteTextOutline.vue'
 import IconCogOutline from 'vue-material-design-icons/CogOutline.vue'
+import IconPackage from 'vue-material-design-icons/PackageVariantClosed.vue'
+import ProductsView from './components/ProductsView.vue'
 import TickyTable from './components/TickyTable.vue'
 import TickyColumn from './components/TickyColumn.vue'
 import TickyHeader from './components/TickyHeader.vue'
 import NewClientDialog from './dialogs/NewClientDialog.vue'
-import ActivityTab from './components/ActivityTab.vue'
+import ActivitySidebarTab from './components/ActivitySidebarTab.vue'
 import ClientTab from './components/ClientTab.vue'
 import ClientNotesTab from './components/ClientNotesTab.vue'
 import ContactTab from './components/ContactTab.vue'
+import ClientProductsTab from './components/ClientProductsTab.vue'
 import { getClients } from './services/clientService'
 import SettingsDialog from './dialogs/SettingsDialog.vue'
+import { sortByName } from './utils/sortByName'
 
 // App State
 const isDialogOpen     = ref(false)
 const clients          = ref([])
+const sortedClients = computed(() => sortByName(clients.value))
 const selectedClient   = ref(null)
 const activeSidebarTab = ref('ticky-details')
 const activeNav        = ref('clients')
 
 // Navigation reaktiv übersetzen via computed
 const navItems = computed(() => [
-  { id: 'clients', name: t('ticky_crm', 'nav_clients'), icon: IconAccountMultiple }
+  { id: 'clients', name: t('ticky_crm', 'nav_clients'), icon: IconAccountMultiple },
+  { id: 'products', name: t('ticky_crm', 'nav_products'), icon: IconPackage },
 ])
 
 // Settings State
@@ -181,8 +199,15 @@ const handleClientCreated = (newClient) => {
 
 const handleClientUpdated = (updatedClient) => {
   const index = clients.value.findIndex(c => c.id === updatedClient.id)
-  if (index !== -1) clients.value[index] = updatedClient
-  selectedClient.value = updatedClient
+  const merged = { ...(clients.value[index] ?? {}), ...updatedClient }
+  if (index !== -1) clients.value[index] = merged
+  selectedClient.value = merged
+}
+
+const updateClientCount = (field, { clientUuid, count }) => {
+  const client = clients.value.find(item => item.uuid === clientUuid)
+  if (client) client[field] = count
+  if (selectedClient.value?.uuid === clientUuid) selectedClient.value[field] = count
 }
 
 const handleClientDeleted = (deletedClientId) => {

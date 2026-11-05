@@ -13,11 +13,11 @@
     "php": "^8.2"
   },
   "require-dev": {
-    "nextcloud/coding-standard": "^1.1",
-    "nextcloud/ocp": "^33.0",
-    "phpstan/phpstan": "^2.2",
-    "sabre/vobject": "^4.5",
-    "doctrine/dbal": "^3.10"
+    "nextcloud/coding-standard": "^1.5.0",
+    "nextcloud/ocp": "^33.0.9",
+    "phpstan/phpstan": "^2.3.5",
+    "sabre/vobject": "^4.6.1",
+    "doctrine/dbal": "^3.10.6"
   },
   "autoload": {
     "psr-4": {

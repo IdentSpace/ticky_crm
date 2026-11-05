@@ -5,7 +5,7 @@
         <template #icon>
           <IconCheck :size="16" />
         </template>
-        {{ isLoading ? 'Wird aktualisiert...' : 'Aktualisieren' }}
+        {{ t('ticky_crm', isLoading ? 'client_saving' : 'client_save') }}
       </NcButton>
     </div>
 
@@ -15,12 +15,13 @@
       </div>
 
       <fieldset class="sidebar-fieldset">
-        <legend>Stammdaten</legend>
-        <NcTextField v-model="editableClient.name" label="Firmenname" :disabled="isLoading" />
-        <NcTextField v-model="editableClient.client_number" label="Kundennummer" :disabled="isLoading" />
+        <legend>{{ t('ticky_crm', 'section_master_data') }}</legend>
+        <NcTextField v-model="editableClient.name" :label="t('ticky_crm', 'field_name')" :disabled="isLoading" />
+        <NcTextField v-model="editableClient.client_number" :label="t('ticky_crm', 'field_client_number')" :disabled="isLoading" />
         <NcSelect
           v-model="editableClient.status"
-          label="Status"
+          :input-label="t('ticky_crm', 'field_status')"
+          label="label"
           :options="statusOptions"
           value-key="id"
           label-key="label"
@@ -29,22 +30,22 @@
       </fieldset>
 
       <fieldset class="sidebar-fieldset">
-        <legend>Kontakt</legend>
+        <legend>{{ t('ticky_crm', 'section_contact') }}</legend>
         <NcTextField
           v-model="editableClient.contact_email"
-          label="E-Mail"
+          :label="t('ticky_crm', 'field_contact_email')"
           type="email"
           :disabled="isLoading"
         />
         <NcTextField
           v-model="editableClient.phone"
-          label="Telefon"
+          :label="t('ticky_crm', 'field_phone')"
           type="tel"
           :disabled="isLoading"
         />
         <NcTextField
           v-model="editableClient.website"
-          label="Website"
+          :label="t('ticky_crm', 'field_website')"
           type="url"
           :disabled="isLoading"
         />
@@ -54,7 +55,8 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { t } from '@nextcloud/l10n'
 import NcTextField from '@nextcloud/vue/components/NcTextField'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcButton from '@nextcloud/vue/components/NcButton'
@@ -69,11 +71,11 @@ const editableClient = ref({ ...props.client })
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-const statusOptions = [
-  { id: 'lead', label: 'Lead' },
-  { id: 'active', label: 'Aktiv' },
-  { id: 'inactive', label: 'Inaktiv' },
-]
+const statusOptions = computed(() => [
+  { id: 'lead', label: t('ticky_crm', 'status_lead') },
+  { id: 'active', label: t('ticky_crm', 'status_active') },
+  { id: 'inactive', label: t('ticky_crm', 'status_inactive') },
+])
 
 // Extrem wichtig: Wenn der Nutzer in der Tabelle auf einen ANDEREN Kunden klickt,
 // müssen die Eingabefelder sofort mit den neuen Daten überschrieben werden.
@@ -88,7 +90,7 @@ const handleSave = async () => {
     // API Call läuft hier durch...
     emit('client-updated', editableClient.value)
   } catch (error) {
-    errorMessage.value = error.message || 'Fehler beim Aktualisieren.'
+    errorMessage.value = error.message || t('ticky_crm', 'error_save')
   } finally {
     isLoading.value = false
   }

@@ -99,6 +99,8 @@ watch(() => props.value, () => {
   /* Wichtig für fixierte Spaltenbreiten bei Tabellen */
   table-layout: fixed;
 
+  .cell-content { overflow-wrap: anywhere; }
+
   th, td {
     padding: 12px;
     vertical-align: middle;

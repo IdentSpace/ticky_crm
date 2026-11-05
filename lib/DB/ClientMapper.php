@@ -38,7 +38,7 @@ class ClientMapper extends QBMapper {
      */
     public function findAllClients(): array {
         $qb = $this->db->getQueryBuilder();
-        $qb->select('*')->from($this->tableName)->orderBy('name', 'ASC');
+        $qb->select('*')->from($this->tableName)->orderBy($qb->createFunction('LOWER(name)'), 'ASC')->addOrderBy('id', 'ASC');
 
         $clients = $this->findEntities($qb);
 
@@ -47,6 +47,30 @@ class ClientMapper extends QBMapper {
         }
 
         return $clients;
+    }
+
+    /** Aggregate separately to avoid multiplying counts when both relations exist. */
+    public function getRelationCounts(array $clientIds): array {
+        $counts = [];
+        if ($clientIds === []) {
+            return $counts;
+        }
+        foreach (['product_count' => 'ticky_client_products', 'contact_count' => 'ticky_client_contacts'] as $field => $table) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('links.client_id')->selectAlias($qb->func()->count('links.id'), 'total')
+                ->from($table, 'links')
+                ->where($qb->expr()->in('links.client_id', $qb->createNamedParameter($clientIds, IQueryBuilder::PARAM_INT_ARRAY)))
+                ->groupBy('links.client_id');
+            if ($field === 'contact_count') {
+                $qb->innerJoin('links', 'cards', 'card', $qb->expr()->eq('links.card_id', 'card.id'));
+            }
+            $result = $qb->executeQuery();
+            foreach ($result->fetchAll() as $row) {
+                $counts[(int)$row['client_id']][$field] = (int)$row['total'];
+            }
+            $result->closeCursor();
+        }
+        return $counts;
     }
 
     /**

@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [main]
   pull_request:
 
 jobs:
@@ -13,18 +12,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ocp-version: ['^32.0', '^33.0', '^34.0']
+        include:
+          - ocp-version: '^32.0'
+            php-version: '8.2'
+          - ocp-version: '^33.0'
+            php-version: '8.2'
+          - ocp-version: '^34.0'
+            php-version: '8.2'
+          - ocp-version: '^35.0'
+            php-version: '8.3'
     name: PHPStan (ocp ${{ matrix.ocp-version }})
     steps:
       - uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: ${{ matrix.php-version }}
           coverage: none
 
       - name: Install dependencies
         run: |
+          composer config platform.php "${{ matrix.php-version }}"
           composer require --dev --no-interaction --no-update \
             nextcloud/ocp:${{ matrix.ocp-version }}
           composer update --no-interaction --prefer-dist
@@ -50,8 +58,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        nextcloud: ['32', '33', '34']
-        nextcloud_upgrade: ['32', '33']
+        nextcloud: ['32', '33', '34', '35']
         database: [mariadb, postgres]
         include:
           # SQLite nur einmal mitnehmen, das ist billig und deckt einen
@@ -87,8 +94,9 @@ jobs:
         run: ./tests/integration/run.sh
 
       - name: Upgrade vom letzten Release
+        if: matrix.nextcloud == '32' || matrix.nextcloud == '33'
         env:
-          NC_VERSION: ${{ matrix.nextcloud_upgrade }}
+          NC_VERSION: ${{ matrix.nextcloud }}
           DB: ${{ matrix.database }}
           PORT: '8082'
           UPGRADE_FROM: v0.1.1

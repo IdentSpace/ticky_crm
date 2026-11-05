@@ -1,42 +1,53 @@
 <template>
-  <NcModal name="CRM-Einstellungen" @close="emit('close')">
+  <NcModal :name="t('ticky_crm', 'settings_dialog_title')" @close="emit('close')">
     <div class="ticky-modal-settings">
-      <h3>{{ t('ticky_crm', 'settings_title') }}</h3>
-      <p class="settings-description">
-        {{ t('ticky_crm', 'settings_description') }}
-      </p>
-
-      <div v-if="loading" class="settings-loading">
-        {{ t('ticky_crm', 'settings_loading') }}
+      <div class="settings-tabs">
+        <NcButton :variant="activeTab === 'access' ? 'primary' : 'secondary'" @click="activeTab = 'access'">
+          {{ t('ticky_crm', 'settings_title') }}
+        </NcButton>
+        <NcButton :variant="activeTab === 'products' ? 'primary' : 'secondary'" @click="activeTab = 'products'">
+          {{ t('ticky_crm', 'nav_products') }}
+        </NcButton>
       </div>
-
-      <template v-else>
-        <div class="setting-row">
-          <NcSelect
-            v-bind="groupSelectConfig"
-            v-model="groupSelectConfig.value"
-          />
-        </div>
-
-        <div class="setting-row">
-          <NcSelect
-            v-bind="userSelectConfig"
-            v-model="userSelectConfig.value"
-          />
-        </div>
-
-        <div class="settings-actions">
-          <NcButton type="primary" :disabled="saving" @click="handleSave">
-            <template #icon>
-              <IconCheck :size="16" />
-            </template>
-            {{ saving ? t('ticky_crm', 'settings_saving') : t('ticky_crm', 'settings_save') }}
-          </NcButton>
-        </div>
-
-        <p v-if="error" class="settings-error">
-          {{ error }}
+      <ProductOptionsSettings v-if="activeTab === 'products'" />
+      <template v-if="activeTab === 'access'">
+        <h3>{{ t('ticky_crm', 'settings_title') }}</h3>
+        <p class="settings-description">
+          {{ t('ticky_crm', 'settings_description') }}
         </p>
+
+        <div v-if="loading" class="settings-loading">
+          {{ t('ticky_crm', 'settings_loading') }}
+        </div>
+
+        <template v-else>
+          <div class="setting-row">
+            <NcSelect
+              v-bind="groupSelectConfig"
+              v-model="groupSelectConfig.value"
+            />
+          </div>
+
+          <div class="setting-row">
+            <NcSelect
+              v-bind="userSelectConfig"
+              v-model="userSelectConfig.value"
+            />
+          </div>
+
+          <div class="settings-actions">
+            <NcButton type="primary" :disabled="saving" @click="handleSave">
+              <template #icon>
+                <IconCheck :size="16" />
+              </template>
+              {{ saving ? t('ticky_crm', 'settings_saving') : t('ticky_crm', 'settings_save') }}
+            </NcButton>
+          </div>
+
+          <p v-if="error" class="settings-error">
+            {{ error }}
+          </p>
+        </template>
       </template>
     </div>
   </NcModal>
@@ -49,8 +60,10 @@ import { generateUrl } from '@nextcloud/router'
 import { t } from '@nextcloud/l10n'
 import { NcModal,NcButton, NcTextField, NcSelect } from '@nextcloud/vue'
 import IconCheck from 'vue-material-design-icons/Check.vue'
+import ProductOptionsSettings from '../components/ProductOptionsSettings.vue'
 
 const emit = defineEmits(['close'])
+const activeTab = ref('access')
 
 const loading = ref(false)
 const saving  = ref(false)
@@ -141,7 +154,8 @@ onMounted(() => loadSettings())
 <style scoped>
 .ticky-modal-settings {
   padding: 24px;
-  min-width: 420px;
+  width: 760px;
+  box-sizing: border-box;
   max-width: 100%;
   display: flex;
   flex-direction: column;
@@ -161,6 +175,8 @@ onMounted(() => loadSettings())
     margin: 0;
   }
 }
+
+.settings-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .setting-row {
   display: flex;

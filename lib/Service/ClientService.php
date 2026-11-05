@@ -19,7 +19,12 @@ class ClientService {
     ) {}
 
     public function all(): array {
-        return $this->mapper->findAllClients();
+        $clients = $this->mapper->findAllClients();
+        $counts = $this->mapper->getRelationCounts(array_map(fn(Client $client) => $client->getId(), $clients));
+        return array_map(fn(Client $client) => array_merge($client->jsonSerialize(), [
+            'product_count' => $counts[$client->getId()]['product_count'] ?? 0,
+            'contact_count' => $counts[$client->getId()]['contact_count'] ?? 0,
+        ]), $clients);
     }
 
     public function find(string $uuid): Client {
@@ -27,6 +32,7 @@ class ClientService {
     }
 
     public function create(array $data): Client {
+        $data = $this->validate($data, true);
         $this->db->beginTransaction();
         try {
             $client = new Client();
@@ -67,6 +73,7 @@ class ClientService {
     }
 
     public function update(string $uuid, array $data): Client {
+        $data = $this->validate($data, false);
         $this->db->beginTransaction();
 
         try {
@@ -133,5 +140,36 @@ class ClientService {
 
     public function delete(string $uuid): void {
         $this->mapper->delete($this->mapper->findByUuid($uuid));
+    }
+
+    private function validate(array $data, bool $creating): array {
+        foreach (['client_number' => 64, 'name' => 255] as $field => $length) {
+            if (!$creating && !array_key_exists($field, $data)) {
+                continue;
+            }
+            $value = $data[$field] ?? null;
+            if (!is_string($value) || trim($value) === '' || mb_strlen(trim($value)) > $length) {
+                throw new \InvalidArgumentException($field);
+            }
+            $data[$field] = trim($value);
+        }
+        foreach (['contact_email', 'invoice_email'] as $field) {
+            if (!isset($data[$field]) || $data[$field] === '') {
+                continue;
+            }
+            if (!is_string($data[$field]) || mb_strlen($data[$field]) > 255 || !filter_var(trim($data[$field]), FILTER_VALIDATE_EMAIL)) {
+                throw new \InvalidArgumentException($field);
+            }
+            $data[$field] = trim($data[$field]);
+        }
+        foreach (['type' => ['company', 'person'], 'status' => ['lead', 'active', 'inactive']] as $field => $allowed) {
+            if (array_key_exists($field, $data) && !in_array($data[$field], $allowed, true)) {
+                throw new \InvalidArgumentException($field);
+            }
+        }
+        if (isset($data['addresses']) && (!is_array($data['addresses']) || array_filter($data['addresses'], fn($address) => !is_array($address)) !== [])) {
+            throw new \InvalidArgumentException('addresses');
+        }
+        return $data;
     }
 }

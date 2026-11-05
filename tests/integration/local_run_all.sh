@@ -4,7 +4,7 @@
 
 # Fresh installation
 CURRENT_DIR=$(dirname "$0")
-for NC_VERSION in 34 33 32; do
+for NC_VERSION in 35 34 33 32; do
     for DB in postgres mariadb sqlite; do
         NC_VERSION=${NC_VERSION} DB=${DB} OUTPUT_SEVERITY=info ${CURRENT_DIR}/run.sh
     done

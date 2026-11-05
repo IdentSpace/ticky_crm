@@ -1,0 +1,3 @@
+docker/dev/*.sh text eol=lf
+docker/dev/Dockerfile text eol=lf
+tests/integration/run.sh text eol=lf

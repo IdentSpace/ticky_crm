@@ -289,6 +289,18 @@ occ db:add-missing-indices
 log_titel $OUTPUT_SEVERITY_DEBUG "Smoke-Test der API"
 expect_ok "/api/v1/clients"
 
+log_titel $OUTPUT_SEVERITY_DEBUG "Product persistence checks"
+docker exec -i -u www-data "$APP_CT" php < "$REPO_ROOT/tests/integration/products.php"
+docker exec -i -u www-data "$APP_CT" php < "$REPO_ROOT/tests/integration/client-counts.php"
+docker exec -i -u www-data -e "API_USER=$ADMIN_USER" -e "API_PASSWORD=$ADMIN_PASS" \
+    "$APP_CT" php < "$REPO_ROOT/tests/integration/products-api.php"
+docker exec -i -u www-data -e "API_USER=$ADMIN_USER" -e "API_PASSWORD=$ADMIN_PASS" \
+    "$APP_CT" php < "$REPO_ROOT/tests/integration/clients-api.php"
+docker exec -i -u www-data -e "API_USER=$ADMIN_USER" -e "API_PASSWORD=$ADMIN_PASS" \
+    "$APP_CT" php < "$REPO_ROOT/tests/integration/client-products-api.php"
+docker exec -i -u www-data -e "API_USER=$ADMIN_USER" -e "API_PASSWORD=$ADMIN_PASS" \
+    "$APP_CT" php < "$REPO_ROOT/tests/integration/product-options.php"
+
 log_titel $OUTPUT_SEVERITY_DEBUG "Prüfe Log auf Fehler"
 LOGFILE="$WORKDIR/nextcloud.log"
 docker exec "$APP_CT" sh -c 'cat /var/www/html/data/nextcloud.log 2>/dev/null || true' > "$LOGFILE"

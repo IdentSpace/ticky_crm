@@ -10,6 +10,7 @@ use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use OCP\IUserSession;
+use OCP\DB\Exception as DatabaseException;
 use Psr\Log\LoggerInterface;
 
 class ClientController extends ApiController {
@@ -53,17 +54,7 @@ class ClientController extends ApiController {
             $client = $this->service->create($params);
             return new DataResponse($client, Http::STATUS_CREATED);
         } catch (\Throwable $e) {
-            $previous = $e->getPrevious();
-            $errorMessage = $previous ? $previous->getMessage() : $e->getMessage();
-            $errorCode = $previous ? $previous->getCode() : $e->getCode();
-
-            if ($errorCode === 23000 || str_contains($errorMessage, '1062')) {
-                return new DataResponse([
-                    'error'   => 'duplicate_client_number',
-                    'message' => 'Clientnumber exist already.',
-                ], Http::STATUS_CONFLICT);
-            }
-            return new DataResponse(['error' => $errorMessage, 'message' => "Systemfehler"], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return $this->writeError($e);
         }
     }
 
@@ -82,11 +73,19 @@ class ClientController extends ApiController {
                 Http::STATUS_NOT_FOUND
             );
         } catch (\Throwable $e) {
-            return new DataResponse(
-                ['message' => 'error by during update: ' . $e->getMessage()],
-                Http::STATUS_INTERNAL_SERVER_ERROR
-            );
+            return $this->writeError($e);
         }
+    }
+
+    private function writeError(\Throwable $error): DataResponse {
+        if ($error instanceof \InvalidArgumentException) {
+            return new DataResponse(['error' => 'client_invalid_field', 'field' => $error->getMessage()], Http::STATUS_BAD_REQUEST);
+        }
+        if ($error instanceof DatabaseException && $error->getReason() === DatabaseException::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+            return new DataResponse(['error' => 'duplicate_client_number'], Http::STATUS_CONFLICT);
+        }
+        $this->logger->error('Client operation failed', ['app' => 'ticky_crm', 'exception' => $error]);
+        return new DataResponse(['error' => 'client_error_save'], Http::STATUS_INTERNAL_SERVER_ERROR);
     }
 
     #[NoAdminRequired]
