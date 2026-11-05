@@ -28,7 +28,7 @@ An Open Source, privacy-first Customer Relationship Management (CRM) app built f
 - ✅ **Contacts Integration**
 - ✅ **Address book for CRM**
 - 🔄 **Relations between customers**
-- 🔄 **Products**
+- ✅ **Products**
 - 🔄 **File Integration**
 - ⏳ **Helpdesk**
 - ⏳ **Quotes/Offers**
@@ -37,7 +37,7 @@ An Open Source, privacy-first Customer Relationship Management (CRM) app built f
 
 ## 📋 Requirements
 
-- **Nextcloud:** v30.x to v33.x
+- **Nextcloud:** v30.x to v35.x
 - **PHP:** v8.2 to v8.4
 - **Database:** MariaDB/MySQL or PostgreSQL (supported by Nextcloud Core)
 

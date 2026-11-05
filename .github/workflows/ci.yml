@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ocp-version: ['^32.0', '^33.0', '^34.0']
+        ocp-version: ['^32.0', '^33.0', '^34.0', '^35.0']
     name: PHPStan (ocp ${{ matrix.ocp-version }})
     steps:
       - uses: actions/checkout@v4
@@ -50,8 +50,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        nextcloud: ['32', '33', '34']
-        nextcloud_upgrade: ['32', '33']
+        nextcloud: ['32', '33', '34', '35']
         database: [mariadb, postgres]
         include:
           # SQLite nur einmal mitnehmen, das ist billig und deckt einen
@@ -87,8 +86,9 @@ jobs:
         run: ./tests/integration/run.sh
 
       - name: Upgrade vom letzten Release
+        if: matrix.nextcloud == '32' || matrix.nextcloud == '33'
         env:
-          NC_VERSION: ${{ matrix.nextcloud_upgrade }}
+          NC_VERSION: ${{ matrix.nextcloud }}
           DB: ${{ matrix.database }}
           PORT: '8082'
           UPGRADE_FROM: v0.1.1

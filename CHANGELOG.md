@@ -1,18 +1,13 @@
 # Changelog
 
 ## [0.3.3] - Unreleased
+- Support Nextcloud 32-35 with PHPStan and installation tests in CI.
 - Product activity tab with create/update/delete and customer link/update/unlink events.
 - Customer activities for changes to agreed positions and linked catalog products.
-
-## [0.3.2] - Unreleased
 - Activities for product assignment, assignment removal and catalog deletion.
 - Configurable product categories, types, procurement, status, units and currencies with defaults in settings.
-
-## [0.3.1] - Unreleased
 - Customer product tab with quantities and independently stored agreed prices.
 - Consistent comma decimal display in forms and product lists.
-
-## [0.3.0] - Unreleased
 - Product navigation, list, create dialog and editable details with validated CRUD API.
 - Product database with current sales and optional purchase prices, tax rates, units and categorization.
 

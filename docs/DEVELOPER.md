@@ -5,7 +5,7 @@
 Requires Docker Compose (Linux containers), Node.js and npm. Run from the repo root.
 
 1. Copy `.env.example` to `.env` (`Copy-Item` on PowerShell, `cp` on Linux/macOS).
-2. Set `NC_VERSION` (default: `33`, supported: `32`?`34`) and `NC_PORT` (default: `8080`).
+2. Set `NC_VERSION` (default: `33`, supported: `32`-`35`) and `NC_PORT` (default: `8080`).
 3. Build and start:
 
 ```sh
