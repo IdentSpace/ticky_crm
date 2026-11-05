@@ -1,6 +1,7 @@
 # Changelog
 
 ## [0.3.3] - Unreleased
+- Use PHP 8.3 and matching Composer platform settings for NC 35 static analysis.
 - Run CI on pushes to all branches and on pull requests.
 - Support Nextcloud 32-35 with PHPStan and installation tests in CI.
 - Product activity tab with create/update/delete and customer link/update/unlink events.
