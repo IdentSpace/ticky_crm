@@ -95,8 +95,15 @@ class Version0002Date20260730 extends SimpleMigrationStep {
         $table = $schema->getTable(self::MAPPING_TABLE);
         $changed = false;
 
-        $hasClientForeignKey = false;
+        // NC 35 exposes only the constraint name; older schemas also expose columns.
+        $hasClientForeignKey = $table->hasForeignKey('ticky_crm_cc_client_fk');
         foreach ($table->getForeignKeys() as $foreignKey) {
+            if ($hasClientForeignKey) {
+                break;
+            }
+            if (!method_exists($foreignKey, 'getLocalColumns')) {
+                continue;
+            }
             $localColumns = array_map('strtolower', $foreignKey->getLocalColumns());
             if (in_array('client_id', $localColumns, true)) {
                 $hasClientForeignKey = true;
