@@ -1,5 +1,7 @@
 # Ticky CRM
 
+Release preparation and publishing: [Console release workflow](docs/releases.md).
+
 An Open Source, privacy-first Customer Relationship Management (CRM) app built from the ground up natively for **Nextcloud**. Manage your clients, track interactions, and collaborate with your team without leaving your digital sovereignty behind.
 
 [License](LICENSE)  

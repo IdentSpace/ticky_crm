@@ -1,6 +1,6 @@
 {
   "name": "ticky-crm",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "scripts": {
@@ -10,7 +10,9 @@
     "build": "npm run build:code && npm run build:translations",
     "lint": "eslint src/",
     "lint:fix": "eslint . --fix",
-    "release": "npm run build && node scripts/build-release.js",
+    "release": "node scripts/build-release.js",
+    "release:publish": "node scripts/publish-release.js",
+    "test:release": "node --test tests/release/*.test.js",
     "test": "npm run build && npm run lint && npm run test:phpstan && npm run test:integration",
     "test:integration": "./tests/integration/local_run_all.sh",
     "test:phpstan": "./vendor/phpstan/phpstan/phpstan"

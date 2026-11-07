@@ -1,84 +1,59 @@
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import fs from 'node:fs'
+import path from 'node:path'
+import { createHash, sign, verify } from 'node:crypto'
 import * as tar from 'tar'
-import { execSync } from 'child_process' // Neu für den OCC-Aufruf
+import { root, run, version, git, assertClean } from './release-common.js'
 
-const __dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
-const appName = 'ticky_crm'
-const buildDir = path.join(__dirname, 'build')
-const artifactDir = path.join(buildDir, 'artifacts', appName)
+const build = path.join(root, 'build')
+const staging = path.join(build, 'artifacts', 'ticky_crm')
 
-// WICHTIG: Ein temporärer Ordner parallel zu deiner App, den Nextcloud im Container sehen kann
-// Da dein Hauptordner in 'custom_apps/ticky_crm' gemountet ist, liegt dieser hier in 'custom_apps/ticky_crm_release'
-const dockerSignDir = path.join(__dirname, '..', `${appName}_release`)
-
-async function createRelease() {
-    console.log(`🚀 Starte sauberen Build für ${appName}...`)
-
-    // 1. Alte Ordner aufräumen
-    if (fs.existsSync(buildDir)) fs.rmSync(buildDir, { recursive: true, force: true })
-    if (fs.existsSync(dockerSignDir)) fs.rmSync(dockerSignDir, { recursive: true, force: true })
-
-    fs.mkdirSync(artifactDir, { recursive: true })
-    fs.mkdirSync(dockerSignDir, { recursive: true })
-
-    // 2. Nur produktive Dateien in den Docker-Signierordner kopieren (OHNE node_modules/.nextcloud)
-    const foldersToCopy = ['appinfo', 'lib', 'l10n', 'js', 'css', 'templates', 'img', 'vendor']
-    const filesToCopy = ['CHANGELOG.md', 'LICENSE.md', 'README.md']
-
-    foldersToCopy.forEach((folder) => {
-        const src = path.join(__dirname, folder)
-        if (fs.existsSync(src)) fs.cpSync(src, path.join(dockerSignDir, folder), { recursive: true })
-    })
-    filesToCopy.forEach((file) => {
-        const src = path.join(__dirname, file)
-        if (fs.existsSync(src)) fs.cpSync(src, path.join(dockerSignDir, file))
-    })
-
-    console.log('🔒 Rufe Docker auf, um die App im sauberen Ordner zu signieren...')
-
-    // 3. OCC im Container ausführen (Zertifikate liegen in deiner normalen App unter .nextcloud)
-    // Wir nutzen die Pfade, wie sie IM CONTAINER (unter custom_apps) ankommen
-    try {
-        const containerKey = `/var/www/html/custom_apps/${appName}/.nextcloud/${appName}.key`
-        const containerCrt = `/var/www/html/custom_apps/${appName}/.nextcloud/${appName}.crt`
-        const containerReleasePath = `/var/www/html/custom_apps/${appName}_release`
-
-        // Tausche 'nextcloud-docker-container-name' mit dem echten Namen deines Docker-Containers aus!
-        const occCommand = `docker exec -u www-data nextcloud-dev-nextcloud-1 php occ integrity:sign-app --privateKey=${containerKey} --certificate=${containerCrt} --path=${containerReleasePath}`
-
-        execSync(occCommand, { stdio: 'inherit' })
-        console.log('✅ Signierung im Container erfolgreich!')
-    } catch (error) {
-        console.error('❌ Fehler beim Signieren im Container:', error)
-        return
+try {
+    const releaseVersion = version()
+    assertClean()
+    const installedFile = path.join(root, 'vendor/composer/installed.json')
+    if (fs.existsSync(path.join(root, 'vendor'))) {
+        if (!fs.existsSync(installedFile)) throw new Error('Cannot verify vendor dependencies. Run composer install --no-dev --optimize-autoloader first.')
+        const installed = JSON.parse(fs.readFileSync(installedFile, 'utf8'))
+        if (installed.dev !== false) throw new Error('vendor contains development dependencies. Run composer install --no-dev --optimize-autoloader before release; restore with composer install afterwards.')
     }
-
-    // 4. Jetzt kopieren wir alles aus dem Signierordner (inklusive der neuen signature.json!) in unseren finalen Artefakt-Ordner
-    fs.cpSync(dockerSignDir, artifactDir, { recursive: true })
-
-    console.log('📂 Archiv wird gepackt...')
-
-    // 5. Als .tar.gz archivieren
-    try {
-        await tar.c(
-            {
-                gzip: true,
-                file: path.join(buildDir, `${appName}.tar.gz`),
-                cwd: path.join(buildDir, 'artifacts'),
-            },
-            [appName],
-        )
-        console.log(`✨ Fertig! Dein Nextcloud-Release liegt unter: build/${appName}.tar.gz`)
-    } catch (error) {
-        console.error('❌ Fehler beim Packen des Archivs:', error)
-    } finally {
-        // Aufräumen: Temporären Signierordner wieder löschen
-        if (fs.existsSync(dockerSignDir)) {
-            fs.rmSync(dockerSignDir, { recursive: true, force: true })
-        }
+    const commit = git(['rev-parse', 'HEAD'])
+    const key = fs.readFileSync(process.env.NC_SIGNING_KEY || path.join(root, '.nextcloud/ticky_crm.key'))
+    const certificate = fs.readFileSync(process.env.NC_SIGNING_CERT || path.join(root, '.nextcloud/ticky_crm.crt'))
+    fs.mkdirSync(build, { recursive: true })
+    fs.rmSync(path.join(build, 'release.json'), { force: true })
+    run(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'build'])
+    fs.rmSync(staging, { recursive: true, force: true })
+    fs.mkdirSync(staging, { recursive: true })
+    for (const name of ['appinfo', 'lib', 'l10n', 'js', 'css', 'templates', 'img', 'docs', 'vendor', 'CHANGELOG.md', 'LICENSE', 'LICENSE.md', 'README.md']) {
+        const source = path.join(root, name)
+        if (fs.existsSync(source)) fs.cpSync(source, path.join(staging, name), { recursive: true })
     }
+    fs.rmSync(path.join(staging, 'appinfo/signature.json'), { force: true })
+    const containerRoot = process.env.NC_CONTAINER_APP_PATH || '/var/www/html/custom_apps/ticky_crm'
+    const args = ['php', 'occ', 'integrity:sign-app',
+        `--privateKey=${process.env.NC_CONTAINER_SIGNING_KEY || `${containerRoot}/.nextcloud/ticky_crm.key`}`,
+        `--certificate=${process.env.NC_CONTAINER_SIGNING_CERT || `${containerRoot}/.nextcloud/ticky_crm.crt`}`,
+        `--path=${containerRoot}/build/artifacts/ticky_crm`]
+    if (process.env.NC_CONTAINER) {
+        run('docker', ['exec', '-u', 'www-data', process.env.NC_CONTAINER, ...args])
+    } else {
+        run('docker', ['compose', 'exec', '-T', '-u', 'www-data', 'nextcloud', ...args])
+    }
+    if (!fs.existsSync(path.join(staging, 'appinfo/signature.json'))) throw new Error('App signature was not created.')
+    const archive = path.join(build, 'ticky_crm.tar.gz')
+    await tar.c({ gzip: true, file: archive, cwd: path.dirname(staging) }, ['ticky_crm'])
+    const bytes = fs.readFileSync(archive)
+    const signature = sign('sha512', bytes, key).toString('base64')
+    if (!verify('sha512', bytes, certificate, Buffer.from(signature, 'base64'))) throw new Error('Signing key and certificate do not match.')
+    assertClean()
+    if (git(['rev-parse', 'HEAD']) !== commit) throw new Error('Git HEAD changed during the build. Run npm run release again.')
+    fs.writeFileSync(path.join(build, 'ticky_crm.tar.gz.sig'), signature + '\n')
+    fs.writeFileSync(path.join(build, 'release.json'), JSON.stringify({
+        version: releaseVersion, tag: `v${releaseVersion}`, commit,
+        sha256: createHash('sha256').update(bytes).digest('hex'), signature,
+    }, null, 2) + '\n')
+    console.log(`Release ${releaseVersion} prepared in build/. Publish with npm run release:publish.`)
+} catch (error) {
+    console.error(error.message)
+    process.exitCode = 1
 }
-
-createRelease()
