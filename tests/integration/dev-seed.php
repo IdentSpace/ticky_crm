@@ -4,6 +4,7 @@ define('OC_CONSOLE', true);
 require_once '/var/www/html/lib/base.php';
 
 use OCA\TickyCRM\Command\DevSeed;
+use OCA\TickyCRM\Service\DecimalValue;
 use OCA\TickyCRM\Service\FollowUpService;
 use OCA\TickyCRM\Service\ProductOptionsService;
 use OCP\IDBConnection;
@@ -55,8 +56,12 @@ try {
     seedCheck(array_diff(['green', 'yellow', 'red', 'unknown', 'inactive'], $statuses) === [], 'Missing contact scenarios');
     seedCheck(count(array_unique(array_column($clients, 'type'))) === 2, 'Missing customer types');
     seedCheck(count(array_unique(array_column($products, 'status'))) === 2, 'Missing active/archived products');
-    seedCheck(in_array('2.5000', array_column($positions, 'quantity'), true), 'Missing fractional quantity');
-    seedCheck(in_array('42.1250', array_column($positions, 'sales_price_net'), true), 'Missing agreed customer prices');
+    // Raw SQLite results use numeric values without trailing zeros; compare the
+    // normalized values rather than a database-specific string representation.
+    $quantities = array_map(fn($position) => DecimalValue::normalize((string)$position['quantity'], 'quantity', false, false), $positions);
+    $prices = array_map(fn($position) => DecimalValue::normalize((string)$position['sales_price_net'], 'sales_price_net', false, false), $positions);
+    seedCheck(in_array('2.5000', $quantities, true), 'Missing fractional quantity');
+    seedCheck(in_array('42.1250', $prices, true), 'Missing agreed customer prices');
     $productStatuses = array_column($products, 'status', 'id');
     foreach ($positions as $position) seedCheck($productStatuses[$position['product_id']] === 'active', 'Archived product was assigned');
     [$code] = runSeed($options);
