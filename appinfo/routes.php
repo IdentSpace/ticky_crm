@@ -1,6 +1,8 @@
 <?php
 return [
     'routes' => [
+        ['name' => 'settings#getFollowUp', 'url' => '/api/v1/settings/follow-up', 'verb' => 'GET'],
+        ['name' => 'settings#saveFollowUp', 'url' => '/api/v1/settings/follow-up', 'verb' => 'POST'],
         ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
 
         ['name' => 'product_options#index', 'url' => '/api/v1/product-options', 'verb' => 'GET'],

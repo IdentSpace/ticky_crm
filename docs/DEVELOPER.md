@@ -37,6 +37,44 @@ docker compose --env-file .env.nc32 -p ticky-crm-nc32 up -d --build --wait
 
 Keep the same `--env-file` and `-p` options for subsequent commands.
 
+## Seed development data
+
+Create sample customers, catalog products and customer-product links:
+
+```sh
+docker compose exec --user www-data nextcloud php occ ticky_crm:dev:seed
+```
+
+The defaults create **24 customers, 12 products and 36 product assignments**.
+All numbers and names are marked with the `DEV` prefix. The command is intended
+for development and demo installations; it creates records in the selected instance.
+
+Preview or customize the dataset:
+
+```sh
+docker compose exec --user www-data nextcloud php occ ticky_crm:dev:seed --dry-run
+docker compose exec --user www-data nextcloud php occ ticky_crm:dev:seed --clients=80 --products=20 --prefix=DEMO --user=admin
+```
+
+On a regular Nextcloud installation, run `php occ ticky_crm:dev:seed` as the web
+server user from the Nextcloud directory. `--user` specifies an existing Nextcloud
+account used to attribute activity entries (default: `admin`). Counts accept 1-1000;
+prefixes accept up to 24 uppercase letters, digits, underscores and hyphens,
+starting with a letter.
+
+The dataset includes companies and individuals, leads, active and inactive customers,
+automatic green/yellow/red and unknown contact status, manual overrides, missing
+contact details and multiple addresses. Products vary in configured types, units,
+categories, procurement, currencies, taxes and purchase/sales prices; every fifth
+product is archived. Customers receive zero to three active catalog products,
+including fractional quantities and independently agreed prices.
+
+Contact dates follow the current global intervals, and product values use the
+current configured choices. Global settings are preserved. All records are saved
+in one transaction. Existing numbers abort the command before any data is created;
+use another `--prefix` for a separate dataset. `--dry-run` validates options and
+number availability without creating records.
+
 ## IDE
 Use an IDE you like, but check if it can handle Markdown and Mermaid correctly.
 

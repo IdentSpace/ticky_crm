@@ -39,7 +39,7 @@ class ClientController extends ApiController {
     #[NoAdminRequired]
     public function show(string $uuid): DataResponse {
         try {
-            return new DataResponse($this->service->find($uuid));
+            return new DataResponse($this->service->present($this->service->find($uuid)));
         } catch (DoesNotExistException) {
             return new DataResponse([], Http::STATUS_NOT_FOUND);
         }
@@ -52,7 +52,7 @@ class ClientController extends ApiController {
             $addresses = $this->request->getParam('addresses', []);
             $params['addresses'] = $addresses;
             $client = $this->service->create($params);
-            return new DataResponse($client, Http::STATUS_CREATED);
+            return new DataResponse($this->service->present($client), Http::STATUS_CREATED);
         } catch (\Throwable $e) {
             return $this->writeError($e);
         }
@@ -66,7 +66,7 @@ class ClientController extends ApiController {
             if ($addresses !== null) {
                 $params['addresses'] = $addresses;
             }
-            return new DataResponse($this->service->update($uuid, $params));
+            return new DataResponse($this->service->present($this->service->update($uuid, $params)));
         } catch (DoesNotExistException $e) {
             return new DataResponse(
                 ['message' => 'client not found.'],

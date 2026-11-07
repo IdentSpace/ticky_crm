@@ -16,14 +16,19 @@ class NoteService {
         private ClientNoteMapper $mapper,
         private INotificationManager $notificationManager,
         private LoggerInterface $logger,
-        private IURLGenerator $urlGenerator
+        private IURLGenerator $urlGenerator,
+        private \OCP\IDBConnection $db,
+        private ClientService $clientService
     ) {}
 
     public function findAll(int $clientId): array {
         return $this->mapper->findAllByClientId($clientId);
     }
 
-    public function create(int $clientId, string $userId, string $content, string $title = '', string $type = 'note'): ClientNote {
+    public function create(int $clientId, string $userId, string $content, string $title = '', string $type = 'note', ?array $contactUpdate = null): ClientNote {
+        if (trim($content) === '' || !in_array($type, ['note', 'phone', 'meeting'], true)) {
+            throw new \InvalidArgumentException('note');
+        }
         $note = new ClientNote();
         $note->setClientId($clientId);
         $note->setUserId($userId);
@@ -33,7 +38,16 @@ class NoteService {
         $note->setCreatedAt(new DateTime());
         $note->setUpdatedAt(new DateTime());
 
-        $savedNote = $this->mapper->insert($note);
+        $this->db->beginTransaction();
+        try {
+            $this->clientService->findById($clientId);
+            if ($contactUpdate !== null) $this->clientService->updateFollowUp($clientId, $contactUpdate);
+            $savedNote = $this->mapper->insert($note);
+            $this->db->commit();
+        } catch (\Throwable $error) {
+            $this->db->rollBack();
+            throw $error;
+        }
 
         $this->notifyMentions($savedNote, $this->extractMentions($content), $userId);
 

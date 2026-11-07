@@ -3,12 +3,13 @@
     <form class="ticky-note-form" @submit.prevent="handleCreate">
       <input
         v-model="newNote.title"
+        :disabled="saving"
         type="text"
         :placeholder="t('ticky_crm', 'note_title_placeholder')"
         class="ticky-input"
       >
 
-      <select v-model="newNote.type" class="ticky-input">
+      <select v-model="newNote.type" class="ticky-input" :disabled="saving">
         <option value="note">
           📝 {{ t('ticky_crm', 'note_type_note') }}
         </option>
@@ -24,6 +25,7 @@
         <textarea
           ref="newNoteTextarea"
           v-model="newNote.content"
+          :disabled="saving"
           :placeholder="t('ticky_crm', 'note_content_placeholder')"
           required
           rows="4"
@@ -52,8 +54,11 @@
         </div>
       </div>
 
+      <ContactStatusUpdate :key="contactUpdateKey" v-model="contactOptions" :disabled="saving" />
+      <FormError v-if="createError" :message="createError" />
+
       <div class="ticky-form-actions">
-        <button type="submit" class="primary" :disabled="loading || !newNote.content.trim()">
+        <button type="submit" class="primary" :disabled="loading || saving || !newNote.content.trim()">
           {{ t('ticky_crm', 'note_save') }}
         </button>
       </div>
@@ -159,6 +164,9 @@ import { ref, reactive, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import axios from '@nextcloud/axios'
 import DOMPurify from 'dompurify'
 import { generateUrl } from '@nextcloud/router'
+import ContactStatusUpdate from './ContactStatusUpdate.vue'
+import FormError from './FormError.vue'
+import { newContactUpdate, contactUpdatePayload } from '../utils/contactUpdate.js'
 import { t } from '@nextcloud/l10n' // Native Nextcloud Lokalisierung importieren
 
 const props = defineProps({
@@ -168,6 +176,15 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['client-updated'])
+const contactOptions = ref(newContactUpdate())
+const contactUpdateKey = ref(0)
+const saving = ref(false)
+const createError = ref('')
+const resetContactOptions = () => {
+  contactOptions.value = newContactUpdate()
+  contactUpdateKey.value++
+}
 const notes = ref([])
 const loading = ref(false)
 const activeMenuId = ref(null)
@@ -201,19 +218,36 @@ const fetchNotes = async () => {
   }
 }
 
-watch(() => props.clientId, fetchNotes, { immediate: true })
+watch(() => props.clientId, () => {
+  newNote.title = ''
+  newNote.content = ''
+  newNote.type = 'note'
+  createError.value = ''
+  resetContactOptions()
+  fetchNotes()
+}, { immediate: true })
 
 const handleCreate = async () => {
-  if (!newNote.content.trim()) return
+  if (saving.value || !newNote.content.trim()) return
+  saving.value = true
+  createError.value = ''
+  const clientId = props.clientId
   try {
     const url = generateUrl(`/apps/ticky_crm/api/v1/clients/${props.clientId}/notes`)
-    const response = await axios.post(url, newNote)
-    notes.value.unshift(response.data)
+    const response = await axios.post(url, { ...newNote, contact_update: contactUpdatePayload(contactOptions.value) })
+    const { client, ...note } = response.data
+    if (client) emit('client-updated', client)
+    if (props.clientId !== clientId) return
+    notes.value.unshift(note)
+    resetContactOptions()
     newNote.title = ''
     newNote.content = ''
     newNote.type = 'note'
   } catch (error) {
+    if (props.clientId === clientId) createError.value = t('ticky_crm', 'note_create_error')
     console.error('Fehler beim Erstellen der Notiz:', error)
+  } finally {
+    saving.value = false
   }
 }
 
