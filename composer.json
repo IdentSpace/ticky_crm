@@ -17,7 +17,8 @@
     "nextcloud/ocp": "^33.0.9",
     "phpstan/phpstan": "^2.3.5",
     "sabre/vobject": "^4.6.1",
-    "doctrine/dbal": "^3.10.6"
+    "doctrine/dbal": "^3.10.6",
+    "symfony/console": "^6.4"
   },
   "autoload": {
     "psr-4": {

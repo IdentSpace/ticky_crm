@@ -40,7 +40,9 @@ Feedback, ideas, and contributions are welcome. Visit the [GitHub repository](ht
     <category>workflow</category>
 
     <screenshot>https://raw.githubusercontent.com/IdentSpace/ticky_crm/refs/heads/main/img/screenshots/clients.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/IdentSpace/ticky_crm/refs/heads/main/img/screenshots/products.png</screenshot>
     <screenshot>https://raw.githubusercontent.com/IdentSpace/ticky_crm/refs/heads/main/img/screenshots/notes.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/IdentSpace/ticky_crm/refs/heads/main/img/screenshots/clients_products.png</screenshot>
 
     <website>https://github.com/IdentSpace/ticky_crm</website>
     <bugs>https://github.com/IdentSpace/ticky_crm/issues</bugs>
@@ -50,6 +52,10 @@ Feedback, ideas, and contributions are welcome. Visit the [GitHub repository](ht
         <php min-version="8.2"/>
         <nextcloud min-version="32" max-version="35"/>
     </dependencies>
+
+    <commands>
+        <command>OCA\TickyCRM\Command\DevSeed</command>
+    </commands>
 
     <repair-steps>
         <post-migration>

@@ -2,6 +2,7 @@
 
 ## [0.4.0] - Unreleased
 
+- **Development:** Add `occ ticky_crm:dev:seed` with configurable counts, unique prefixes and dry-run support to create varied customers, products and customer-product assignments.
 - **Contact status:** Visual follow-up indicators in the customer list and details: no follow-up required, contact soon, overdue, inactive and no contact recorded.
 - **Automatic follow-ups:** Calculate status when loading customers from the last contact date, with global administrator-configurable intervals (30/60 days by default). No cron job or timeline evaluation is required.
 - **Manual overrides:** Switch between automatic and manual status per customer. Manual overrides remain in place when only the contact date changes; inactive customers are excluded from automatic follow-ups.

@@ -293,6 +293,7 @@ log_titel $OUTPUT_SEVERITY_DEBUG "Product persistence checks"
 docker exec -i -u www-data "$APP_CT" php < "$REPO_ROOT/tests/integration/products.php"
 docker exec -i -u www-data "$APP_CT" php < "$REPO_ROOT/tests/integration/client-counts.php"
 docker exec -i -u www-data "$APP_CT" php < "$REPO_ROOT/tests/integration/follow-up.php"
+docker exec -i -u www-data "$APP_CT" php < "$REPO_ROOT/tests/integration/dev-seed.php"
 docker exec -i -u www-data -e "API_USER=$ADMIN_USER" -e "API_PASSWORD=$ADMIN_PASS" \
     "$APP_CT" php < "$REPO_ROOT/tests/integration/products-api.php"
 docker exec -i -u www-data -e "API_USER=$ADMIN_USER" -e "API_PASSWORD=$ADMIN_PASS" \
