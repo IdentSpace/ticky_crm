@@ -3,6 +3,13 @@
     <FormError v-if="errorMessage" :message="errorMessage" class="error-banner" />
 
     <div class="sidebar-form">
+      <ContactStatusUpdate
+        :key="client.uuid"
+        v-model="editableClient"
+        variant="details"
+        :current-status="client.follow_up_status"
+        :disabled="isLoading"
+      />
       <fieldset class="sidebar-fieldset">
         <legend>{{ t('ticky_crm', 'section_master_data') }}</legend>
         <NcTextField
@@ -166,6 +173,7 @@
 </template>
 
 <script setup>
+import ContactStatusUpdate from './ContactStatusUpdate.vue'
 import { ref, reactive, watch } from 'vue'
 import { t } from '@nextcloud/l10n'
 import NcTextField from '@nextcloud/vue/components/NcTextField'
@@ -208,6 +216,9 @@ const toEditableClient = (client) => {
   for (const field of ['contact_email', 'invoice_email', 'phone', 'website', 'vat_id', 'tax_number', 'register_court', 'register_number']) {
     value[field] ??= ''
   }
+  value.follow_up_mode ??= 'automatic'
+  value.follow_up_manual ??= 'green'
+  value.last_contact_date ??= ''
   value.addresses = (value.addresses ?? []).map(address => {
     for (const field of ['label', 'street', 'house_number', 'address_addition', 'postal_code', 'city', 'country_code']) address[field] ??= ''
     return address

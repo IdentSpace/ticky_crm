@@ -5,6 +5,9 @@ namespace OCA\TickyCRM\DB;
 use OCP\AppFramework\Db\Entity;
 use JsonSerializable;
 /**
+ * @method string|null getFollowUpMode()
+ * @method string|null getFollowUpManual()
+ * @method string|null getLastContactDate()
  * @method string|null getUuid()
  * @method string|null getClientNumber()
  * @method string|null getName()
@@ -25,6 +28,9 @@ use JsonSerializable;
  * @method \DateTime|null getUpdatedAt()
  */
 class Client extends Entity implements JsonSerializable {
+    protected $followUpMode;
+    protected $followUpManual;
+    protected $lastContactDate;
     protected $uuid;
     protected $clientNumber;
     protected $name;
@@ -56,6 +62,9 @@ class Client extends Entity implements JsonSerializable {
     public function jsonSerialize(): array {
         return [
             'id' => $this->getId(),
+            'follow_up_mode' => $this->getFollowUpMode() ?? 'automatic',
+            'follow_up_manual' => $this->getFollowUpManual() ?? 'green',
+            'last_contact_date' => $this->getLastContactDate(),
             'uuid' => $this->getUuid(),
             'client_number' => $this->getClientNumber(),
             'name' => $this->getName(),

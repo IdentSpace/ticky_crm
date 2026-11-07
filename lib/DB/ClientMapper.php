@@ -15,6 +15,12 @@ class ClientMapper extends QBMapper {
         parent::__construct($db, 'ticky_clients', Client::class);
     }
 
+    public function findById(int $id): Client {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')->from($this->tableName)->where($qb->expr()->eq('id', $qb->createNamedParameter($id)));
+        return $this->findEntity($qb);
+    }
+
     /**
      * Findet einen Kunden anhand seiner öffentlichen UUID
      */

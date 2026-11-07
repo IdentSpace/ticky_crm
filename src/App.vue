@@ -24,7 +24,7 @@
             {{ t('ticky_crm', 'nav_settings') }}
           </NcButton>
 
-          <SettingsDialog v-if="showSettingsModal" @close="showSettingsModal = false" />
+          <SettingsDialog v-if="showSettingsModal" @close="closeSettings" />
         </div>
       </template>
     </NcAppNavigation>
@@ -37,6 +37,27 @@
         :subtitle="n('ticky_crm', 'client_count_singular', 'client_count_plural', clients.length, { count: clients.length })"
       >
         <template #actions>
+          <div class="client-status-filter">
+            <NcActions
+              :menu-name="statusFilterLabel"
+              :title="statusFilterLabel"
+              force-menu
+              wide
+            >
+              <template #icon>
+                <IconChevronDown :size="20" />
+              </template>
+              <NcActionCheckbox
+                v-for="option in statusFilterOptions"
+                :key="option.id"
+                :model-value="statusFilters.some(selected => selected.id === option.id)"
+                @update:model-value="setStatusFilter(option, $event)"
+              >
+                {{ option.label }}
+              </NcActionCheckbox>
+            </NcActions>
+          </div>
+
           <NcButton type="primary" @click="isDialogOpen = true">
             <template #icon>
               <IconPlus :size="20" />
@@ -46,13 +67,38 @@
         </template>
       </TickyHeader>
 
-      <TickyTable :value="sortedClients" @row-click="selectedClient = $event">
-        <TickyColumn field="name" :header="t('ticky_crm', 'column_name')" max-width="250px" />
-        <TickyColumn field="client_number" :header="t('ticky_crm', 'column_client_number')" />
-        <TickyColumn field="contact_email" :header="t('ticky_crm', 'column_email')" />
-        <TickyColumn field="phone" :header="t('ticky_crm', 'column_phone')" />
-        <TickyColumn field="product_count" :header="t('ticky_crm', 'nav_products')" />
-        <TickyColumn field="contact_count" :header="t('ticky_crm', 'column_contacts')" />
+      <TickyTable :value="filteredClients" default-sort-field="name" @row-click="selectedClient = $event">
+        <TickyColumn
+          sortable
+          field="follow_up_status"
+          align="center"
+          :sort-compare="compareFollowUp"
+          :header="t('ticky_crm', 'follow_up_title')"
+        />
+        <template #follow_up_status="{ data }">
+          <FollowUpStatus :status="data.follow_up_status" icon-only />
+        </template>
+        <TickyColumn
+          sortable
+          field="name"
+          :header="t('ticky_crm', 'column_name')"
+          max-width="250px"
+        />
+        <TickyColumn sortable field="client_number" :header="t('ticky_crm', 'column_client_number')" />
+        <TickyColumn sortable field="contact_email" :header="t('ticky_crm', 'column_email')" />
+        <TickyColumn sortable field="phone" :header="t('ticky_crm', 'column_phone')" />
+        <TickyColumn
+          sortable
+          field="product_count"
+          align="center"
+          :header="t('ticky_crm', 'nav_products')"
+        />
+        <TickyColumn
+          sortable
+          field="contact_count"
+          align="center"
+          :header="t('ticky_crm', 'column_contacts')"
+        />
         <template #product_count="{ data }">
           {{ data.product_count ?? 0 }}
         </template>
@@ -90,7 +136,7 @@
         <template #icon>
           <IconNoteText :size="20" />
         </template>
-        <ClientNotesTab :client-id="selectedClient.id" />
+        <ClientNotesTab :key="selectedClient.uuid" :client-id="selectedClient.id" @client-updated="handleNoteClientUpdated" />
       </NcAppSidebarTab>
 
       <NcAppSidebarTab id="contacts" :name="t('ticky_crm', 'tab_contacts')" icon="icon-contacts-dark">
@@ -126,6 +172,9 @@ import NcAppNavigationItem from '@nextcloud/vue/components/NcAppNavigationItem'
 import NcAppSidebar from '@nextcloud/vue/components/NcAppSidebar'
 import NcAppSidebarTab from '@nextcloud/vue/components/NcAppSidebarTab'
 import NcButton from '@nextcloud/vue/components/NcButton'
+import NcActions from '@nextcloud/vue/components/NcActions'
+import NcActionCheckbox from '@nextcloud/vue/components/NcActionCheckbox'
+import IconChevronDown from 'vue-material-design-icons/ChevronDown.vue'
 import IconPlus from 'vue-material-design-icons/Plus.vue'
 import IconAccount from 'vue-material-design-icons/Account.vue'
 import IconAccountMultiple from 'vue-material-design-icons/AccountMultiple.vue'
@@ -143,13 +192,30 @@ import ClientNotesTab from './components/ClientNotesTab.vue'
 import ContactTab from './components/ContactTab.vue'
 import ClientProductsTab from './components/ClientProductsTab.vue'
 import { getClients } from './services/clientService'
+import FollowUpStatus from './components/FollowUpStatus.vue'
 import SettingsDialog from './dialogs/SettingsDialog.vue'
-import { sortByName } from './utils/sortByName'
 
 // App State
 const isDialogOpen     = ref(false)
 const clients          = ref([])
-const sortedClients = computed(() => sortByName(clients.value))
+const statusFilters = ref([])
+const statusFilterLabel = computed(() => statusFilters.value.length
+  ? statusFilters.value.map(option => option.label).join(', ')
+  : t('ticky_crm', 'follow_up_filter'))
+const setStatusFilter = (option, checked) => {
+  statusFilters.value = checked
+    ? [...statusFilters.value.filter(selected => selected.id !== option.id), option]
+    : statusFilters.value.filter(selected => selected.id !== option.id)
+}
+const statusFilterOptions = computed(() => ['red', 'yellow', 'green', 'unknown', 'inactive'].map(id => ({
+  id, label: t('ticky_crm', 'follow_up_' + id),
+})))
+const filteredClients = computed(() => clients.value.filter(client => statusFilters.value.length === 0 || statusFilters.value.some(option => option.id === client.follow_up_status)))
+const compareFollowUp = (a, b) => {
+  const priority = { red: 0, yellow: 1, green: 2, unknown: 3, inactive: 4 }
+  return priority[a.follow_up_status] - priority[b.follow_up_status]
+    || (a.last_contact_date ?? '9999-12-31').localeCompare(b.last_contact_date ?? '9999-12-31')
+}
 const selectedClient   = ref(null)
 const activeSidebarTab = ref('ticky-details')
 const activeNav        = ref('clients')
@@ -168,6 +234,13 @@ const selectedGroups    = ref([])
 const selectedUsers     = ref([])
 const groupOptions      = ref([])
 const userOptions       = ref([])
+
+const closeSettings = async () => {
+  showSettingsModal.value = false
+  const uuid = selectedClient.value?.uuid
+  await loadClients()
+  if (uuid) selectedClient.value = clients.value.find(client => client.uuid === uuid) ?? null
+}
 
 const openSettings = async () => {
   showSettingsModal.value = true
@@ -195,6 +268,14 @@ const openSettings = async () => {
 // Client Handlers
 const handleClientCreated = (newClient) => {
   clients.value.push(newClient)
+}
+
+const handleNoteClientUpdated = (updatedClient) => {
+  const index = clients.value.findIndex(client => client.id === updatedClient.id)
+  if (index !== -1) clients.value[index] = { ...clients.value[index], ...updatedClient }
+  if (selectedClient.value?.id === updatedClient.id) {
+    selectedClient.value = { ...selectedClient.value, ...updatedClient }
+  }
 }
 
 const handleClientUpdated = (updatedClient) => {
@@ -241,6 +322,33 @@ onMounted(() => {
 })
 </script>
 <style lang="scss" scoped>
+.client-status-filter {
+  width: clamp(180px, 25vw, 280px);
+  max-width: 280px;
+  flex: 0 0 auto;
+  min-width: 0;
+
+  :deep(.action-items),
+  :deep(.action-item) {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  :deep(.action-item__menutoggle) {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: var(--default-clickable-area);
+  }
+
+  :deep(.button-vue__text) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
 .navigation__footer {
   display: flex;
   align-items: center;

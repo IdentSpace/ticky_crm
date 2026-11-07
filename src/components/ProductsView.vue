@@ -25,13 +25,43 @@
     <p v-else-if="!error && !products.length" class="product-message">
       {{ t('ticky_crm', 'product_empty') }}
     </p>
-    <TickyTable v-if="products.length" :value="sortedProducts" @row-click="selected = $event">
-      <TickyColumn field="name" :header="t('ticky_crm', 'product_name')" max-width="250px" />
-      <TickyColumn field="product_number" :header="t('ticky_crm', 'product_product_number')" />
-      <TickyColumn field="type" :header="t('ticky_crm', 'product_type')" />
-      <TickyColumn field="sales_price_net" :header="t('ticky_crm', 'product_sales_price_net')" />
-      <TickyColumn field="unit" :header="t('ticky_crm', 'product_unit')" />
-      <TickyColumn field="status" :header="t('ticky_crm', 'field_status')" />
+    <TickyTable
+      v-if="products.length"
+      :value="products"
+      default-sort-field="name"
+      @row-click="selected = $event"
+    >
+      <TickyColumn
+        sortable
+        field="name"
+        :header="t('ticky_crm', 'product_name')"
+        max-width="250px"
+      />
+      <TickyColumn sortable field="product_number" :header="t('ticky_crm', 'product_product_number')" />
+      <TickyColumn
+        sortable
+        field="type"
+        :sort-compare="(a, b) => compareOption('type', a, b)"
+        :header="t('ticky_crm', 'product_type')"
+      />
+      <TickyColumn
+        sortable
+        field="sales_price_net"
+        :sort-compare="comparePrice"
+        :header="t('ticky_crm', 'product_sales_price_net')"
+      />
+      <TickyColumn
+        sortable
+        field="unit"
+        :sort-compare="(a, b) => compareOption('unit', a, b)"
+        :header="t('ticky_crm', 'product_unit')"
+      />
+      <TickyColumn
+        sortable
+        field="status"
+        :sort-compare="(a, b) => compareOption('status', a, b)"
+        :header="t('ticky_crm', 'field_status')"
+      />
       <template #type="{ data }">
         {{ productOptionLabel('type', data.type) }}
       </template>
@@ -84,7 +114,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { t, n } from '@nextcloud/l10n'
 import NcAppContent from '@nextcloud/vue/components/NcAppContent'
 import NcAppSidebar from '@nextcloud/vue/components/NcAppSidebar'
@@ -99,12 +129,13 @@ import TickyColumn from './TickyColumn.vue'
 import ProductTab from './ProductTab.vue'
 import NewProductDialog from '../dialogs/NewProductDialog.vue'
 import { getProducts, productError } from '../services/productService'
-import { decimalDisplay } from '../utils/decimal'
-import { sortByName } from '../utils/sortByName'
+import { decimalDisplay, decimalCompare } from '../utils/decimal'
 import { loadProductOptions, productOptionLabel } from '../services/productOptionsService'
 
 const products = ref([])
-const sortedProducts = computed(() => sortByName(products.value))
+const optionCollator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true })
+const compareOption = (field, a, b) => optionCollator.compare(productOptionLabel(field, a[field]), productOptionLabel(field, b[field]))
+const comparePrice = (a, b) => decimalCompare(a.sales_price_net, b.sales_price_net)
 const selected = ref(null)
 const activeTab = ref('product-details')
 const creating = ref(false)

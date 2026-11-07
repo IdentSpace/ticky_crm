@@ -3,23 +3,33 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>ticky_crm</id>
     <name>Ticky CRM</name>
-    <version>0.3.3</version>
+    <version>0.4.0</version>
     <summary>Open-source CRM and client management for Nextcloud</summary>
-    <description>A modern, open-source CRM built from the ground up for Nextcloud.
-        Ticky CRM provides seamless client management, automated interaction logs, and activity tracking.
+    <description><![CDATA[
+Ticky CRM is an **open-source CRM for Nextcloud**. Manage your customers, keep track of interactions, and organize follow-ups directly in your Nextcloud.
 
-        Milestones:
-        - Customer Management (done)
-        - Customer Notes (done)
-        - Contacts Integration (done)
-        - Products (done)
-        - File Integration (next)
-        - Deck Integration (next)
-        - Helpdesk (future)
-        - Quotes (future)
+## Features
 
-        Please note: This project is currently in its early stages of development.
-        We are actively looking for feedback, ideas, and feature suggestions—contributions from the community are highly welcome!</description>
+- **Customer management:** Manage companies and individual customers with contact and billing details.
+- **Customer notes:** Keep customer information and notes in one place.
+- **Contacts integration:** Connect customers with contacts in Nextcloud.
+- **Products:** Manage your product catalog and assign products to customers.
+- **Contact status and follow-ups:** See who needs attention with visual status icons, configurable intervals, and manual overrides.
+- **Activity tracking:** View recorded changes in the customer timeline.
+
+## Planned features
+
+- File integration
+- Deck integration
+- Helpdesk
+- Quotes
+
+## Development and feedback
+
+**Ticky CRM is in early development.** Features and workflows are still evolving.
+
+Feedback, ideas, and contributions are welcome. Visit the [GitHub repository](https://github.com/IdentSpace/ticky_crm) or [report an issue](https://github.com/IdentSpace/ticky_crm/issues).
+]]></description>
     <licence>agpl</licence>
 
     <author mail="info@identspace.de" homepage="https://identspace.de">IdentSpace</author>

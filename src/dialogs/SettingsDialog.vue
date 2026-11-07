@@ -8,7 +8,11 @@
         <NcButton :variant="activeTab === 'products' ? 'primary' : 'secondary'" @click="activeTab = 'products'">
           {{ t('ticky_crm', 'nav_products') }}
         </NcButton>
+        <NcButton :variant="activeTab === 'follow-up' ? 'primary' : 'secondary'" @click="activeTab = 'follow-up'">
+          {{ t('ticky_crm', 'follow_up_title') }}
+        </NcButton>
       </div>
+      <FollowUpSettings v-if="activeTab === 'follow-up'" />
       <ProductOptionsSettings v-if="activeTab === 'products'" />
       <template v-if="activeTab === 'access'">
         <h3>{{ t('ticky_crm', 'settings_title') }}</h3>
@@ -60,6 +64,7 @@ import { generateUrl } from '@nextcloud/router'
 import { t } from '@nextcloud/l10n'
 import { NcModal,NcButton, NcTextField, NcSelect } from '@nextcloud/vue'
 import IconCheck from 'vue-material-design-icons/Check.vue'
+import FollowUpSettings from '../components/FollowUpSettings.vue'
 import ProductOptionsSettings from '../components/ProductOptionsSettings.vue'
 
 const emit = defineEmits(['close'])

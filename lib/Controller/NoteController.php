@@ -17,6 +17,7 @@ class NoteController extends Controller {
         string $appName,
         IRequest $request,
         private NoteService $service,
+        private \OCA\TickyCRM\Service\ClientService $clientService,
         private IUserSession $userSession,
         private LoggerInterface $logger
     ) {
@@ -29,15 +30,24 @@ class NoteController extends Controller {
     }
 
     #[NoAdminRequired]
-    public function create(int $clientId, string $content, string $title = '', string $type = 'note'): JSONResponse {
+    public function create(int $clientId, string $content, string $title = '', string $type = 'note', ?array $contact_update = null): JSONResponse {
         $user = $this->userSession->getUser();
         if (!$user) {
             return new JSONResponse(['error' => 'Unauthorized'], Http::STATUS_UNAUTHORIZED);
         }
 
         try {
-            $note = $this->service->create($clientId, $user->getUID(), $content, $title, $type);
-            return new JSONResponse($note, Http::STATUS_CREATED);
+            $note = $this->service->create($clientId, $user->getUID(), $content, $title, $type, $contact_update);
+            $data = $note->jsonSerialize();
+            if ($contact_update !== null) {
+                $client = $this->clientService->present($this->clientService->findById($clientId));
+                $data['client'] = array_intersect_key($client, array_flip(['id', 'uuid', 'last_contact_date', 'follow_up_mode', 'follow_up_manual', 'follow_up_status', 'updated_at']));
+            }
+            return new JSONResponse($data, Http::STATUS_CREATED);
+        } catch (\InvalidArgumentException $e) {
+            return new JSONResponse(['error' => 'note_invalid_field', 'field' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (DoesNotExistException) {
+            return new JSONResponse(['error' => 'Client not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
             $this->logger->error('Failed to create note: {error}', [
                 'error' => $e->getMessage(),

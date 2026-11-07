@@ -19,6 +19,8 @@ class SettingsController extends Controller {
         private IGroupManager $groupManager,
         private IUserManager $userManager,
         private IAppManager $appManager,
+        private \OCP\IUserSession $session,
+        private \OCA\TickyCRM\Service\FollowUpService $followUpService,
     ) {
         parent::__construct($appName, $request);
     }
@@ -53,6 +55,21 @@ class SettingsController extends Controller {
     public function saveSettings(array $groups, array $users): JSONResponse {
         $this->accessService->saveSettings($groups, $users);
         return new JSONResponse(['success' => true]);
+    }
+
+    #[\OCP\AppFramework\Http\Attribute\NoAdminRequired]
+    public function getFollowUp(): JSONResponse {
+        $uid = $this->session->getUser()?->getUID();
+        return new JSONResponse(array_merge($this->followUpService->settings(), ['can_manage' => $uid !== null && $this->groupManager->isAdmin($uid)]));
+    }
+
+    public function saveFollowUp(int $yellowDays, int $redDays): JSONResponse {
+        try {
+            $this->followUpService->save($yellowDays, $redDays);
+            return new JSONResponse($this->followUpService->settings());
+        } catch (\InvalidArgumentException) {
+            return new JSONResponse(['error' => 'follow_up_intervals'], 400);
+        }
     }
 
     /**

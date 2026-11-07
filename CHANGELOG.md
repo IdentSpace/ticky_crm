@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0] - Unreleased
+
+- **Contact status:** Visual follow-up indicators in the customer list and details: no follow-up required, contact soon, overdue, inactive and no contact recorded.
+- **Automatic follow-ups:** Calculate status when loading customers from the last contact date, with global administrator-configurable intervals (30/60 days by default). No cron job or timeline evaluation is required.
+- **Manual overrides:** Switch between automatic and manual status per customer. Manual overrides remain in place when only the contact date changes; inactive customers are excluded from automatic follow-ups.
+- **Contact status editor:** Reusable, collapsible component with Nextcloud Vue controls for automatic/manual mode, manual status, last contact date and a "Contacted today" action.
+- **Notes:** Optionally update the contact date, contact status or both when creating a note. Save the note and contact changes together in one transaction and update the customer list immediately.
+- **Filtering:** Compact contact-status dropdown in the customer header with checkbox-based multiple selection, bounded width and truncated selection text.
+- **Table sorting:** Reusable sortable column headers with direction indicators, custom comparison rules and configurable left/center/right alignment. Enable sorting for customers and products, including follow-up priority and precise decimal price comparisons.
+- **Table design:** Icon-only customer contact status with tooltips, centered status and count columns, subtle row borders and horizontal scrolling on narrow screens.
+- **Translations:** Fix corrupted German umlauts and quotation marks and regenerate the language files.
+- **App Store:** Restructure the app description with Markdown headings, feature lists, planned features and feedback links.
+
 ## [0.3.3] - Unreleased
 - Fix contact foreign key detection with the NC 35 schema API during installation.
 - Wait for Nextcloud app-config cache refresh in the product options permission test.

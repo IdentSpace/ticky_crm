@@ -15,20 +15,49 @@ class ClientService {
         private ClientMapper $mapper,
         private AddressService $addressService,
         private IDBConnection $db,
-        private ActivityService $activityService
+        private ActivityService $activityService,
+        private FollowUpService $followUpService
     ) {}
 
     public function all(): array {
         $clients = $this->mapper->findAllClients();
         $counts = $this->mapper->getRelationCounts(array_map(fn(Client $client) => $client->getId(), $clients));
-        return array_map(fn(Client $client) => array_merge($client->jsonSerialize(), [
+        return array_map(fn(Client $client) => array_merge($this->present($client), [
             'product_count' => $counts[$client->getId()]['product_count'] ?? 0,
             'contact_count' => $counts[$client->getId()]['contact_count'] ?? 0,
         ]), $clients);
     }
 
+    public function present(Client $client): array {
+        $data = $client->jsonSerialize();
+        $data['follow_up_status'] = $this->followUpService->status($data);
+        return $data;
+    }
+
     public function find(string $uuid): Client {
         return $this->mapper->findByUuid($uuid);
+    }
+
+    public function findById(int $id): Client {
+        return $this->mapper->findById($id);
+    }
+
+    /** Update contact fields inside the caller's transaction. */
+    public function updateFollowUp(int $id, array $data): Client {
+        if (array_diff(array_keys($data), ['last_contact_date', 'follow_up_mode', 'follow_up_manual']) !== []) {
+            throw new \InvalidArgumentException('contact_update');
+        }
+        $data = $this->validate($data, false);
+        $client = $this->mapper->findById($id);
+        foreach (['last_contact_date' => 'setLastContactDate', 'follow_up_mode' => 'setFollowUpMode', 'follow_up_manual' => 'setFollowUpManual'] as $field => $setter) {
+            if (array_key_exists($field, $data)) $client->$setter($data[$field]);
+        }
+        if ($data !== []) {
+            $client->setUpdatedAt(new DateTime());
+            $client = $this->mapper->update($client);
+            $this->activityService->log('client', 'updated', $client->getName(), $client->getId(), ['uuid' => $client->getUuid()]);
+        }
+        return $client;
     }
 
     public function create(array $data): Client {
@@ -41,6 +70,9 @@ class ClientService {
             $client->setName($data['name']);
             $client->setType($data['type'] ?? 'company');
             $client->setStatus($data['status'] ?? 'lead');
+            $client->setFollowUpMode($data['follow_up_mode'] ?? 'automatic');
+            $client->setFollowUpManual($data['follow_up_manual'] ?? 'green');
+            $client->setLastContactDate($data['last_contact_date'] ?? null);
             $client->setContactEmail($data['contact_email'] ?? null);
             $client->setInvoiceEmail($data['invoice_email'] ?? null);
             $client->setPhone($data['phone'] ?? null);
@@ -82,6 +114,9 @@ class ClientService {
             $addressesData = $data['addresses'] ?? null;
             unset($data['addresses']);
 
+            foreach (['follow_up_mode' => 'setFollowUpMode', 'follow_up_manual' => 'setFollowUpManual', 'last_contact_date' => 'setLastContactDate'] as $field => $setter) {
+                if (array_key_exists($field, $data)) $client->$setter($data[$field]);
+            }
             if (isset($data['name']))            $client->setName($data['name']);
             if (isset($data['client_number']))   $client->setClientNumber($data['client_number']);
             if (isset($data['type']))            $client->setType($data['type']);
@@ -165,6 +200,17 @@ class ClientService {
         foreach (['type' => ['company', 'person'], 'status' => ['lead', 'active', 'inactive']] as $field => $allowed) {
             if (array_key_exists($field, $data) && !in_array($data[$field], $allowed, true)) {
                 throw new \InvalidArgumentException($field);
+            }
+        }
+        foreach (['follow_up_mode' => ['automatic', 'manual'], 'follow_up_manual' => ['green', 'yellow', 'red']] as $field => $allowed) {
+            if (array_key_exists($field, $data) && !in_array($data[$field], $allowed, true)) throw new \InvalidArgumentException($field);
+        }
+        if (array_key_exists('last_contact_date', $data)) {
+            $value = $data['last_contact_date'];
+            if ($value === '') $data['last_contact_date'] = null;
+            elseif ($value !== null) {
+                $date = is_string($value) ? \DateTimeImmutable::createFromFormat('!Y-m-d', $value) : false;
+                if (!$date || $date->format('Y-m-d') !== $value || $date > new \DateTimeImmutable('today')) throw new \InvalidArgumentException('last_contact_date');
             }
         }
         if (isset($data['addresses']) && (!is_array($data['addresses']) || array_filter($data['addresses'], fn($address) => !is_array($address)) !== [])) {
